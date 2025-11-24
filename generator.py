@@ -10,7 +10,7 @@ from docx.oxml.ns import qn
 #  CONFIGURAÇÃO GERAL
 # ======================
 
-API_KEY = "API KEY DO GEMINI AQUI"  # <<< COLOQUE SUA CHAVE AQUI
+API_KEY = "AIzaSyD8Pkkj62UhJgC8r8rzoE2NF3eV2CYyNZY"  # <<< COLOQUE SUA CHAVE AQUI
 client = genai.Client(api_key=API_KEY)
 
 REQUISITOS_DOCX = "requisitos.docx"
@@ -18,14 +18,14 @@ SAIDA_JSON = "saida.json"
 TESTES_JSON = "testes.json"
 WORD_OUTPUT = "cenarios_de_testes.docx"
 
-print("🚀 Iniciando gerador de cenários de teste...")
+print("🚀 Gerador de cenários de testes iniciado.")
 
 # =============================================
 #  1. EXTRAÇÃO DO .DOCX → JSON DE REQUISITOS
 # =============================================
 
 def extrair_requisitos_docx(caminho=REQUISITOS_DOCX):
-    print("📄 Extraindo requisitos do DOCX...")
+    print("📄 Extraindo requisitos do DOCX")
 
     doc = docx.Document(caminho)
 
@@ -52,7 +52,7 @@ def extrair_requisitos_docx(caminho=REQUISITOS_DOCX):
     with open(SAIDA_JSON, "w", encoding="utf-8") as f:
         json.dump({"sections": sections}, f, ensure_ascii=False, indent=2)
 
-    print("✅ Requisitos extraídos e salvos em saida.json")
+    print("✅ Requisitos extraídos e salvos em no arquivo 'saida.json'")
 
     return sections
 
@@ -61,106 +61,110 @@ def extrair_requisitos_docx(caminho=REQUISITOS_DOCX):
 # =================================================================================================
 
 QA_PROMPT = """
-Você é um Engenheiro de QA Sênior com 15+ anos de experiência.
+Você é um Engenheiro de QA Sênior com 15+ anos de experiência em testes manuais, automatizados, análise de requisitos, modelagem de cenários e testes baseados em risco.  
+Sua missão é gerar uma suíte de testes **completa, técnica, rastreável e pronta para execução**, baseada exclusivamente nos requisitos fornecidos.
 
-## 🎯 OBJETIVO
-Gerar suíte COMPLETA de testes baseada nos requisitos fornecidos.
+# 🎯 OBJETIVO
+Produzir uma suíte de testes completa, robusta e tecnicamente abrangente, contemplando cenários funcionais positivos, negativos, casos de exceção, limites mínimos e máximos de entrada (tamanho, tipo, caracteres especiais, números), além de validações de segurança e performance. O objetivo final é garantir cobertura total dos requisitos, detecção antecipada de falhas ocultas e zero ambiguidade em cada cenário descrito.
 
-## 📋 METODOLOGIA
+# 🔎 METODOLOGIA
 
-### 1. ANÁLISE PRELIMINAR
-Identifique:
-- Entidades principais e relacionamentos
-- Regras de negócio críticas
-- Pontos de integração
-- Riscos técnicos e de negócio
+## 1. ANÁLISE ESTRUTURAL
+Extraia de forma explícita:
+- Entidades principais, atributos e relacionamentos
+- Regras de negócio essenciais e condicionais
+- Fluxos primários, alternativos e exceções
+- Dependências externas e integrações
+- Riscos técnicos, funcionais e de usabilidade
 
-### 2. TÉCNICAS APLICADAS
+## 2. TÉCNICAS DE TESTE OBRIGATÓRIAS
+Utilize e informe quais técnicas sustentam cada cenário:
 - Particionamento de Equivalência
 - Análise de Valor Limite
 - Tabela de Decisão
-- Testes de Estado
-- Testes Exploratórios
+- Testes Baseados em Estado
+- Testes Exploratórios e Heurísticas (SFDPOT, HICCUPPS)
+- Análise de Risco
 
-### 3. COBERTURA OBRIGATÓRIA
-✅ Happy path
-✅ Validações (formato, tipo, tamanho, regex)
-✅ Permissões e autenticação
-✅ Tratamento de erros
-✅ Performance (< 2s para 95% requisições)
-✅ Segurança (OWASP Top 10)
-✅ Compatibilidade (browsers, devices)
+## 3. COBERTURA MÍNIMA NECESSÁRIA
+Cada suíte deve contemplar:
+- Happy path completo
+- Validações de dados (tipo, formato, tamanho, regex, range)
+- Permissões, níveis de acesso e autenticação
+- Comportamentos inesperados, erros e exceções
+- Performance (SLAs definidos ou padrão: < 2s para 95% das requisições)
+- Segurança (OWASP Top 10 + autenticação/autorizações incorretas)
+- Compatibilidade cross-browser e cross-device
+- Persistência e integridade de dados
+- Cenários assíncronos e concorrência (quando aplicável)
 
-## 📐 FORMATO DE SAÍDA
+# 📦 FORMATO DE ENTREGA
+Retorne **somente JSON válido**, sem markdown, sem textos extras.
 
-Retorne APENAS JSON válido (sem markdown):
+Estrutura padrão obrigatória:
 
 {
   "analise_requisitos": {
-    "entidades": ["User", "Order", "Product"],
-    "regras_negocio": ["Pedido mínimo R$ 50", "Estoque > 0"],
-    "riscos": ["Race condition em checkout", "SQL injection em busca"],
-    "integrações": ["API Pagamento", "API Correios"]
+    "entidades": [],
+    "atributos_criticos": [],
+    "regras_negocio": [],
+    "fluxos": {
+      "principal": [],
+      "alternativos": [],
+      "excecoes": []
+    },
+    "integracoes": [],
+    "riscos": []
   },
-  
+
   "cenarios_funcionais": [
     {
       "id": "TC-FUNC-001",
-      "titulo": "Criar pedido com produto válido deve gerar ID único",
-      "categoria": "CRUD",
-      "prioridade": "Crítica",
-      "tecnica_teste": "Fluxo Principal",
-      "descricao": "Valida criação de pedido com dados válidos",
-      "pre_condicoes": [
-        "Usuário autenticado com token JWT válido",
-        "Produto PROD-001 existe com estoque >= 1"
-      ],
-      "dados_teste": {
-        "usuario": {"id": "USR-001", "email": "test@test.com"},
-        "produto": {"id": "PROD-001", "preco": 100.00, "estoque": 5}
-      },
-      "passos": [
-        "1. POST /api/orders com body: {userId: 'USR-001', productId: 'PROD-001', quantity: 1}",
-        "2. Verificar response status 201",
-        "3. Validar response body contém orderId (formato UUID)",
-        "4. Consultar GET /api/orders/{orderId} e validar dados"
-      ],
-      "resultado_esperado": "Pedido criado com ID único, status 'PENDING', total R$ 100.00",
-      "criterios_aceitacao": [
-        "Response status = 201",
-        "orderId é UUID válido",
-        "Estoque do produto decrementado para 4",
-        "Tempo de resposta < 500ms"
-      ],
-      "pos_condicoes": "Pedido existe no banco, estoque atualizado"
+      "titulo": "",
+      "categoria": "CRUD|Fluxo|RegraNegocio|Integracao",
+      "prioridade": "Crítica|Alta|Média|Baixa",
+      "tecnica_teste": "",
+      "descricao": "",
+      "pre_condicoes": [],
+      "dados_teste": {},
+      "passos": [],
+      "resultado_esperado": "",
+      "criterios_aceitacao": [],
+      "pos_condicoes": ""
     }
   ],
-  
-  "cenarios_negativos": [...],
-  "cenarios_borda": [...],
-  "cenarios_seguranca": [...],
-  "bugs_provaveis": [...],
-  "matriz_rastreabilidade": [...],
-  "metricas_qualidade": {...}
+
+  "cenarios_negativos": [],
+  "cenarios_borda": [],
+  "cenarios_seguranca": [],
+  "cenario_performance": [],
+  "bugs_provaveis": [],
+  "matriz_rastreabilidade": [],
+  "metricas_qualidade": {
+    "cobertura_requisitos": "",
+    "total_casos_teste": 0,
+    "distribuicao_por_categoria": {}
+  }
 }
 
-## ⚠️ REGRAS CRÍTICAS
+# ⚠️ REGRAS CRÍTICAS E INEGOCIÁVEIS
 
-1. IDs seguem padrão: TC-{TIPO}-{NNN}
-2. Prioridades: Crítica|Alta|Média|Baixa
-3. Passos são executáveis (não vagos)
-4. Resultados são mensuráveis
-5. JSON válido (sem trailing commas)
+1. IDs devem seguir: TC-{CATEGORIA}-{NNN}
+2. Nenhum passo pode ser vago — todos devem ser acionáveis
+3. Resultados devem ser 100% mensuráveis e verificáveis
+4. Testes devem considerar condições de concorrência sempre que possível
+5. Nunca incluir textos fora do JSON, nem comentários
+6. Nada de vírgulas sobrando (JSON deve ser validado mentalmente por um ninja)
+7. Sempre mapear pelo menos 1 bug provável por regra de negócio
 
-## 📚 EXEMPLO DE QUALIDADE
-
-❌ RUIM: "Testar se login funciona"
-✅ BOM: "Login com email válido e senha correta deve retornar token JWT e redirecionar para /dashboard em < 2s"
+# 🏆 EXEMPLO DO QUE ESPERO
+❌ Vago: "Testar login"
+✅ Robusto: "Login com credenciais válidas deve retornar token JWT, registrar timestamp do login e responder em < 2s"
 
 Retorne APENAS o JSON, sem texto adicional."""
 
 def build_prompt():
-    print("🧩 Construindo prompt...")
+    print("🧩 Pensando para criar os melhores cenários")
 
     with open(SAIDA_JSON, "r", encoding="utf-8") as f:
         requisitos = json.load(f)
@@ -189,9 +193,9 @@ def limpar_json_bruto(texto):
 # ====================
 
 def gerar_cenarios(prompt):
-    print("🤖 Chamando Gemini 2.0 Flash...")
+    print("🤖 Gemini está Processando as informações.")
     resp = client.models.generate_content(
-        model="models/gemini-2.0-flash", #caso queira utilizar outro modelo do gemini basta trocar por outro. Ex: "gemini-2.0-flash-lite"
+        model="models/gemini-2.5-flash", #caso queira utilizar outro modelo do gemini basta trocar por outro. Ex: "gemini-2.0-flash-lite"
         contents=prompt
     )
     return resp.text
@@ -234,10 +238,10 @@ def style_header(cell):
 # =====================================================================
 
 def salvar_word(json_data):
-    print("📝 Gerando documento Word...")
+    print("📝 Gerando seu plano de testes em Word")
 
     doc = docx.Document()
-    doc.add_heading("Cenários de Teste - QA Automático", level=1)
+    doc.add_heading("Cenários de Teste - IA Generator", level=1)
 
     def add_table(title, itens):
         doc.add_heading(title, level=2)
@@ -274,7 +278,7 @@ def salvar_word(json_data):
         add_table("Cenários de Borda", json_data["cenarios_borda"])
 
     doc.save(WORD_OUTPUT)
-    print(f"✅ Documento gerado: {WORD_OUTPUT}")
+    print(f"Seu documento foi gerado ✅. Confira o arquivo: '{WORD_OUTPUT}'")
 
 # ============================================================
 #  7. EXECUÇÃO PRINCIPAL
@@ -294,10 +298,10 @@ if __name__ == "__main__":
     try:
         json_data = json.loads(resposta_limpa)
     except:
-        print("❌ Erro: Gemini retornou JSON inválido.")
-        print("JSON bruto salvo em testes.json")
+        print("Gemini retornou um JSON inválido. Isso pode ser um erro :( ❌")
+        print("JSON bruto salvo em 'testes.json'")
         exit()
 
     salvar_word(json_data)
 
-    print("🎉 Processo concluído com sucesso!")
+    print("🎉 Plano de testes criado com sucesso!")

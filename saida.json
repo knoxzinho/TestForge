@@ -1,24 +1,24 @@
 {
   "sections": [
     {
-      "title": "Documentação Funcional — Sistema de Vendas Online (Loja de Roupas)",
+      "title": "Documentação Funcional — Sistema de Gestão para Mercadinho Local",
       "requirements": []
     },
     {
-      "title": "Versão: 1.0\nData: 23 de novembro de 2025\nAutor: Equipe de Produto / Analista de Sistemas",
+      "title": "Versão: 1.0\nData: 23 de novembro de 2025\nAutor: OpenIA / Rian Santos",
       "requirements": []
     },
     {
-      "title": "1. Visão geral",
+      "title": "1. Visão Geral",
+      "requirements": []
+    },
+    {
+      "title": "Este documento descreve as funcionalidades essenciais de um Sistema de Gestão para um Mercadinho Local, voltado para facilitar operações diárias como: controle de estoque, vendas, cadastro de clientes, compras com fornecedores, emissão de relatórios e fluxo financeiro simples. O sistema será multiplataforma (desktop ou web), leve e intuitivo.",
       "requirements": [
         {
-          "text": "Esta documentação descreve as funcionalidades, fluxos, regras de negócio e critérios de aceitação para um sistema de comércio eletrônico (e‑commerce) focado em venda de roupas. O objetivo é disponibilizar uma loja online intuitiva, segura e escalável, com painel administrativo para gestão de produtos, estoque, promoções e pedidos."
+          "text": "O objetivo principal é otimizar processos internos e oferecer uma visão clara do desempenho do mercadinho."
         }
       ]
-    },
-    {
-      "title": "Público‑alvo do documento: PO, time de desenvolvimento, QA, UX/UI, DevOps, stakeholders.",
-      "requirements": []
     },
     {
       "title": "2. Escopo",
@@ -28,34 +28,34 @@
       "title": "2.1 Inclusões",
       "requirements": [
         {
-          "text": "Catálogo de produtos com variações (tamanhos, cores)."
+          "text": "Cadastro e gerenciamento de produtos."
         },
         {
-          "text": "Busca e filtros avançados."
+          "text": "Controle de estoque em tempo real."
         },
         {
-          "text": "Carrinho de compras e checkout (endereço, frete, pagamento)."
+          "text": "Registro de vendas (com e sem CPF)."
         },
         {
-          "text": "Integração com gateways de pagamento (ex.: Pix, cartão, boleto)."
+          "text": "Sistema de caixa (PDV) simples e rápido."
         },
         {
-          "text": "Gestão de pedidos (status, histórico)."
+          "text": "Emissão de comprovantes (impressora térmica)."
         },
         {
-          "text": "Painel administrativo para CRUD de produtos, controle de estoque, promoções, relatórios."
+          "text": "Cadastro de fornecedores e controle de pedidos de compra."
         },
         {
-          "text": "Gestão de clientes (cadastro, endereços, histórico de pedidos)."
+          "text": "Dashboard com indicadores."
         },
         {
-          "text": "Sistema de devolução/estorno e trocas."
+          "text": "Controle financeiro básico: entradas, saídas e fluxo de caixa."
         },
         {
-          "text": "Notificações por e‑mail e push (opcional)."
+          "text": "Relatórios de vendas, estoque e compras."
         },
         {
-          "text": "Relatórios de vendas, estoque e performance."
+          "text": "Controle de usuários e permissões."
         }
       ]
     },
@@ -63,617 +63,352 @@
       "title": "2.2 Exclusões",
       "requirements": [
         {
-          "text": "ERP completo (integração com ERPs deverá ser abordada como requisito opcional)."
+          "text": "Integração com e-commerce."
         },
         {
-          "text": "Marketplace multi‑vendedor (apenas loja única)."
+          "text": "Sistema fiscal completo com emissão de NF-e (pode ser incluído depois)."
         },
         {
-          "text": "Módulo de manufatura ou PDV físico (apenas vendas online)."
+          "text": "Controle avançado de contabilidade."
+        },
+        {
+          "text": "Integração com sistemas de pagamento automático."
         }
       ]
     },
     {
-      "title": "3. Principais atores",
+      "title": "3. Atores",
       "requirements": []
     },
     {
-      "title": "Cliente (Consumidor) — navega, compra, solicita trocas/devoluções.",
+      "title": "Atendente/Caixa — realiza vendas, registra pagamentos.",
       "requirements": []
     },
     {
-      "title": "Visitante — usuário não autenticado que pode navegar e comprar (checkout com convidado).",
+      "title": "Gerente/Administrador — gerencia estoque, produtos, fornecedores e relatórios.",
       "requirements": []
     },
     {
-      "title": "Administrador / Operador de Loja — cadastra produtos, gerencia estoque, pedidos e promoções.",
+      "title": "Cliente — opcionalmente cadastrado (para fiado ou controle de consumo).",
       "requirements": []
     },
     {
-      "title": "Financeiro — consulta relatórios e concilia pagamentos.",
+      "title": "Fornecedor — fornece produtos para reposição.",
       "requirements": []
     },
     {
-      "title": "Transportadora — com integração para cálculo e recebimento de informações de envio (pode ser via API ou arquivo).",
+      "title": "4. Requisitos Funcionais",
       "requirements": []
     },
     {
-      "title": "Gateway de Pagamento — serviço externo para processar pagamentos.",
+      "title": "4.1 Cadastro de Produtos",
+      "requirements": [
+        {
+          "text": "RF01: Permitir cadastrar produtos com nome, código de barras, categoria, preço de venda, preço de custo, estoque inicial, unidade (kg, un, pacote)."
+        },
+        {
+          "text": "RF02: Permitir edição e desativação de produtos."
+        },
+        {
+          "text": "RF03: Suporte a itens fracionados (ex.: venda por kg ou gramas)."
+        },
+        {
+          "text": "RF04: Registrar data da última reposição."
+        }
+      ]
+    },
+    {
+      "title": "4.2 Estoque",
+      "requirements": [
+        {
+          "text": "RF05: Atualizar estoque automaticamente após vendas."
+        },
+        {
+          "text": "RF06: Permitir entrada manual de estoque (compra, ajuste, inventário)."
+        },
+        {
+          "text": "RF07: Notificações de estoque baixo (nível mínimo configurável)."
+        },
+        {
+          "text": "RF08: Registro de inventário periódico."
+        }
+      ]
+    },
+    {
+      "title": "4.3 Vendas / Caixa (PDV)",
+      "requirements": [
+        {
+          "text": "RF09: Registrar vendas com seleção de produtos via código, nome ou leitor de código de barras."
+        },
+        {
+          "text": "RF10: Permitir descontos por item ou por total (com permissões)."
+        },
+        {
+          "text": "RF11: Registrar forma de pagamento (dinheiro, cartão, Pix, misto)."
+        },
+        {
+          "text": "RF12: Permitir venda com CPF na nota (opcional)."
+        },
+        {
+          "text": "RF13: Imprimir comprovante em impressora térmica."
+        },
+        {
+          "text": "RF14: Abrir e fechar caixa diariamente com registro de valores."
+        },
+        {
+          "text": "RF15: Registrar cancelamento de item ou venda (com auditoria)."
+        },
+        {
+          "text": "RF16: Permitir venda fiado para clientes cadastrados."
+        }
+      ]
+    },
+    {
+      "title": "4.4 Cadastro de Clientes",
+      "requirements": [
+        {
+          "text": "RF17: Cadastrar nome, telefone, CPF, saldo de fiado e histórico."
+        },
+        {
+          "text": "RF18: Permitir consulta de dívidas e pagamentos."
+        },
+        {
+          "text": "RF19: Controlar limite de fiado."
+        }
+      ]
+    },
+    {
+      "title": "4.5 Fornecedores e Compras",
+      "requirements": [
+        {
+          "text": "RF20: Cadastro de fornecedores com dados básicos (CNPJ, telefone, endereço)."
+        },
+        {
+          "text": "RF21: Registrar pedidos de compra (itens, quantidade, valor)."
+        },
+        {
+          "text": "RF22: Atualizar estoque após chegada da mercadoria."
+        },
+        {
+          "text": "RF23: Registrar contas a pagar relacionadas a compras."
+        }
+      ]
+    },
+    {
+      "title": "4.6 Financeiro / Fluxo de Caixa",
+      "requirements": [
+        {
+          "text": "RF24: Registrar entradas (vendas, depósitos)."
+        },
+        {
+          "text": "RF25: Registrar saídas (pagamentos a fornecedores, despesas)."
+        },
+        {
+          "text": "RF26: Exibir saldo diário e mensal."
+        },
+        {
+          "text": "RF27: Gerar relatório financeiro."
+        }
+      ]
+    },
+    {
+      "title": "4.7 Relatórios",
+      "requirements": [
+        {
+          "text": "RF28: Relatório de vendas por período, forma de pagamento e categorias."
+        },
+        {
+          "text": "RF29: Relatório de produtos mais vendidos e menos vendidos."
+        },
+        {
+          "text": "RF30: Relatório de estoque atual e produtos em falta."
+        },
+        {
+          "text": "RF31: Relatório de fluxo de caixa com gráfico."
+        },
+        {
+          "text": "RF32: Exportar relatórios para PDF ou Excel."
+        }
+      ]
+    },
+    {
+      "title": "4.8 Usuários e Permissões",
+      "requirements": [
+        {
+          "text": "RF33: Criar perfis de acesso (Administrador, Caixa, Estoquista)."
+        },
+        {
+          "text": "RF34: Restringir funcionalidades de acordo com permissões."
+        },
+        {
+          "text": "RF35: Registro de log de ações críticas (cancelamentos, ajustes de estoque)."
+        }
+      ]
+    },
+    {
+      "title": "5. Requisitos Não Funcionais",
+      "requirements": [
+        {
+          "text": "RNF01: Sistema deve operar offline com sincronização quando conectado (opcional)."
+        },
+        {
+          "text": "RNF02: Interface rápida e intuitiva, com navegação otimizada para caixa."
+        },
+        {
+          "text": "RNF03: Tempo de resposta inferior a 1 segundo nas operações de PDV."
+        },
+        {
+          "text": "RNF04: Backup automático diário."
+        },
+        {
+          "text": "RNF05: Segurança: senhas criptografadas, controle de acesso por sessão."
+        },
+        {
+          "text": "RNF06: Suporte a impressoras térmicas padrão ESC/POS."
+        },
+        {
+          "text": "RNF07: Escalabilidade leve para uso multi-dispositivo no estabelecimento."
+        }
+      ]
+    },
+    {
+      "title": "6. Modelagem de Dados (Resumo Conceitual)",
+      "requirements": [
+        {
+          "text": "Produto (id, nome, categoria, código_barras, preço_venda, preço_custo, estoque, unidade, status)."
+        },
+        {
+          "text": "MovimentoEstoque (id, produto_id, tipo, quantidade, motivo, data)."
+        },
+        {
+          "text": "Venda (id, cliente_id, total, forma_pagamento, desconto, data)."
+        },
+        {
+          "text": "ItemVenda (id, venda_id, produto_id, quantidade, preço)."
+        },
+        {
+          "text": "Cliente (id, nome, telefone, cpf, saldo_fiado)."
+        },
+        {
+          "text": "Fornecedor (id, nome, cnpj, telefone, endereço)."
+        },
+        {
+          "text": "Compra (id, fornecedor_id, total, data)."
+        },
+        {
+          "text": "ItemCompra (id, compra_id, produto_id, quantidade, custo)."
+        },
+        {
+          "text": "Financeiro (id, tipo, valor, categoria, data, descrição)."
+        },
+        {
+          "text": "Usuário (id, nome, login, senha, perfil)."
+        }
+      ]
+    },
+    {
+      "title": "7. Fluxos Principais",
       "requirements": []
     },
     {
-      "title": "4. Requisitos funcionais (detalhados)",
-      "requirements": []
-    },
-    {
-      "title": "4.1 Cadastro e Autenticação",
+      "title": "Fluxo de Venda",
       "requirements": [
         {
-          "text": "RF1: O sistema deve permitir cadastro de clientes com: nome, e‑mail (único), senha, CPF/CNPJ (opcional), data de nascimento (opcional), telefone."
+          "text": "Atendente abre caixa."
         },
         {
-          "text": "RF2: Autenticação via e‑mail/senha e recuperação de senha por e‑mail."
+          "text": "Escaneia produtos ou pesquisa manualmente."
         },
         {
-          "text": "RF3: Autenticação social opcional (Google, Apple, Facebook) — opcional/implementação posterior."
+          "text": "Sistema exibe total, permite aplicar desconto."
         },
         {
-          "text": "RF4: Checkout como convidado (sem criação de conta), com opção de criar conta após compra."
+          "text": "Cliente escolhe forma de pagamento."
+        },
+        {
+          "text": "Venda é registrada e estoque abatido."
+        },
+        {
+          "text": "Impressão do comprovante."
+        },
+        {
+          "text": "Caixa registra fechamento ao fim do dia."
         }
       ]
     },
     {
-      "title": "Regras de negócio: senha deve seguir política (mínimo 8 caracteres, ao menos 1 número e 1 letra). E‑mail validado por verificação.",
-      "requirements": []
-    },
-    {
-      "title": "4.2 Catálogo e Produtos",
+      "title": "Fluxo de Reposição",
       "requirements": [
         {
-          "text": "RF5: Produto possui: SKU, nome, descrição curta, descrição longa (HTML/Markdown), marca, categorias, tags, imagens, preço, preço promocional (opcional), atributos (tamanho, cor), peso/dimensões."
+          "text": "Gerente cria pedido de compra."
         },
         {
-          "text": "RF6: Cada variação (ex.: camiseta tamanho M, cor preta) possui controle de estoque próprio e SKU."
+          "text": "Mercadoria chega → conferência de quantidades."
         },
         {
-          "text": "RF7: Upload múltiplo de imagens; suporte a imagem principal, galeria e imagens por variação."
+          "text": "Entrada de estoque com vínculo ao fornecedor."
         },
         {
-          "text": "RF8: Produto pode ter status (ativo, inativo, esgotado) e visibilidade (público, apenas consultores etc.)."
+          "text": "Atualização automática do saldo de estoque."
         }
       ]
     },
     {
-      "title": "Busca e filtros:",
+      "title": "Fluxo Financeiro",
       "requirements": [
         {
-          "text": "RF9: Busca por texto (nome, descrição, SKU)."
+          "text": "Registro de vendas automáticas como entrada."
         },
         {
-          "text": "RF10: Filtros por categoria, preço, tamanho, cor, marca, disponibilidade, faixa de desconto."
+          "text": "Despesas e pagamentos de fornecedores como saídas."
         },
         {
-          "text": "RF11: Ordenação: relevância, preço (asc/desc), mais vendidos, novidades."
+          "text": "Sistema gera relatório consolidado."
         }
       ]
     },
     {
-      "title": "4.3 Carrinho e Checkout",
+      "title": "8. Relatórios Essenciais",
       "requirements": [
         {
-          "text": "RF12: Carrinho persistente para usuários logados; para convidados, persistência via cookie por 30 dias."
+          "text": "Vendas diárias e por período."
         },
         {
-          "text": "RF13: Adicionar, remover e alterar quantidade de itens. Validação de estoque em tempo real."
+          "text": "Produtos mais vendidos."
         },
         {
-          "text": "RF14: Estimativa de frete na página do carrinho (input CEP)."
+          "text": "Estoque mínimo."
         },
         {
-          "text": "RF15: Processo de checkout em passos: endereço, envio, pagamento, revisão e confirmação."
+          "text": "Movimentações de caixa."
         },
         {
-          "text": "RF16: Cálculo de frete com múltiplas transportadoras e opções de frete (padrão, expresso, retirada em loja)."
-        },
-        {
-          "text": "RF17: Aplicação de cupons/promos antes do pagamento."
-        },
-        {
-          "text": "RF18: Suporte a múltiplos meios de pagamento: cartão (tokenização), boleto bancário, Pix (QR code), ERPs de pagamentos locais."
+          "text": "Relatório completo para contabilidade."
         }
       ]
     },
     {
-      "title": "Regras de negócio importantes:",
+      "title": "9. Integrações Futuras (Roadmap)",
       "requirements": [
         {
-          "text": "Se estoque do item for insuficiente durante checkout, informar e bloquear finalização até ajuste."
+          "text": "Integração fiscal com NF-e/NFC-e."
         },
         {
-          "text": "Todos os valores devem ser apresentados com imposto incluído ou mensagem clara sobre impostos."
+          "text": "Integração com sistemas de pagamento (maquininhas)."
+        },
+        {
+          "text": "Versão mobile para consulta rápida."
+        },
+        {
+          "text": "App para controle de compras e estoque."
         }
       ]
     },
     {
-      "title": "4.4 Gestão de Pedidos",
+      "title": "10. Considerações Finais",
       "requirements": [
         {
-          "text": "RF19: Geração de pedido com número único e status (Novo, Pago, Em Separação, Enviado, Entregue, Cancelado, Devolução, Reembolsado)."
-        },
-        {
-          "text": "RF20: Histórico de alterações de status com quem realizou e timestamp."
-        },
-        {
-          "text": "RF21: Possibilidade de alterar status manualmente no painel admin e adicionar rastreamento de envio (tracking code)."
-        },
-        {
-          "text": "RF22: Emissão de nota fiscal eletrônica (NF-e) — integração/registro para emissão (padrão para Brasil)."
-        },
-        {
-          "text": "RF23: Integração com gateways para consulta de pagamento e reembolso."
-        }
-      ]
-    },
-    {
-      "title": "4.5 Gestão de Estoque",
-      "requirements": [
-        {
-          "text": "RF24: Controle de estoque por SKU/variação."
-        },
-        {
-          "text": "RF25: Regras de reserva de estoque no momento do pagamento (ou ao confirmar pedido, dependendo do fluxo)."
-        },
-        {
-          "text": "RF26: Alertas de estoque baixo (threshold configurável)."
-        },
-        {
-          "text": "RF27: Ajustes manuais e importação/exportação de estoque (CSV)."
-        }
-      ]
-    },
-    {
-      "title": "4.6 Painel Administrativo",
-      "requirements": [
-        {
-          "text": "RF28: CRUD de produtos, categorias, marcas e atributos."
-        },
-        {
-          "text": "RF29: Gestão de pedidos, busca por pedido/cliente/SKU e emissão de notas."
-        },
-        {
-          "text": "RF30: Gestão de clientes (visualizar histórico de pedidos, editar dados)."
-        },
-        {
-          "text": "RF31: Gestão de cupons e promoções (percentual, valor fixo, validade, regras de uso)."
-        },
-        {
-          "text": "RF32: Relatórios e dashboards: vendas por período, produtos mais vendidos, taxa de conversão, inventário."
-        },
-        {
-          "text": "RF33: Perfis e permissões (Admin, Operador de Pedidos, Atendimento, Financeiro) com RBAC."
-        }
-      ]
-    },
-    {
-      "title": "4.7 Promoções e Marketing",
-      "requirements": [
-        {
-          "text": "RF34: Criação de promoções por produto, categoria ou carrinho inteiro."
-        },
-        {
-          "text": "RF35: Sistema de cupom com limites de uso (por usuário, global), período de validade e regras (ex.: mínimo de compra)."
-        },
-        {
-          "text": "RF36: Cross‑selling / upsell (sugestões na página do produto e no checkout)."
-        },
-        {
-          "text": "RF37: Integração com ferramentas de e‑mail marketing (exportação de base, tags de interesse)."
-        }
-      ]
-    },
-    {
-      "title": "4.8 Atendimento ao cliente, Trocas e Reembolsos",
-      "requirements": [
-        {
-          "text": "RF38: Registro de solicitações de troca/devolução com vínculo ao pedido."
-        },
-        {
-          "text": "RF39: Fluxo de aprovação (cliente solicita → análise → aprovação → instrução de envio → reembolso/troca)."
-        },
-        {
-          "text": "RF40: Geração de comprovante de reembolso e integração com gateway para estorno."
-        }
-      ]
-    },
-    {
-      "title": "4.9 Notificações",
-      "requirements": [
-        {
-          "text": "RF41: Envio automático de e‑mail ao cliente: confirmação de pedido, pagamento aprovado, pedido enviado (com código de rastreio), pedido entregue, cancelamento."
-        },
-        {
-          "text": "RF42: Notificações internas no painel (novos pedidos, pagamentos pendentes, estoque baixo)."
-        },
-        {
-          "text": "RF43: Suporte a templates personalizáveis de e‑mail."
-        }
-      ]
-    },
-    {
-      "title": "4.10 Relatórios e BI",
-      "requirements": [
-        {
-          "text": "RF44: Relatórios por período (vendas, ticket médio, número de pedidos)."
-        },
-        {
-          "text": "RF45: Relatórios de performance por canal (orgânico, pago), produtos, categorias."
-        },
-        {
-          "text": "RF46: Exportação de relatórios em CSV/PDF."
-        }
-      ]
-    },
-    {
-      "title": "5. Requisitos não‑funcionais",
-      "requirements": [
-        {
-          "text": "RNF1: Sistema responsivo (mobile first)."
-        },
-        {
-          "text": "RNF2: Tempo de resposta: páginas críticas (ex.: home, produto) ≤ 1s em peak (target), p95 < 2s."
-        },
-        {
-          "text": "RNF3: Disponibilidade 99.5% para a loja em produção (SLA)."
-        },
-        {
-          "text": "RNF4: Segurança: TLS 1.2+, proteção contra ataques comuns (XSS, CSRF, SQL Injection), hashing seguro de senhas (bcrypt/argon2)."
-        },
-        {
-          "text": "RNF5: Conformidade com LGPD (controle de dados pessoais, consentimento, exportação/exclusão de dados)."
-        },
-        {
-          "text": "RNF6: Escalabilidade horizontal — suportar picos sazonais (Black Friday)."
-        },
-        {
-          "text": "RNF7: Logs e auditoria para operações sensíveis."
-        },
-        {
-          "text": "RNF8: Internacionalização (i18n) — suporte a moeda/idioma (inicial: BRL/pt‑BR)."
-        }
-      ]
-    },
-    {
-      "title": "6. Modelagem de dados (Resumo)",
-      "requirements": [
-        {
-          "text": "Entidades principais (camada conceitual):"
-        },
-        {
-          "text": "Usuário/Cliente (id, nome, email, telefone, cpf, senha_hash, role)"
-        },
-        {
-          "text": "Endereço (id, cliente_id, rua, número, complemento, bairro, cidade, estado, cep)"
-        },
-        {
-          "text": "Produto (id, sku_base, nome, descrição, categoria_id, marca_id, ativo)"
-        },
-        {
-          "text": "Variação (id, produto_id, sku, atributos[tamanho, cor], preço, estoque, imagens)"
-        },
-        {
-          "text": "Categoria (id, nome, slug, pai_id)"
-        },
-        {
-          "text": "Pedido (id, número, cliente_id, status, total, frete, impostos, data)"
-        },
-        {
-          "text": "ItemPedido (id, pedido_id, variação_id, quantidade, preço_unit)"
-        },
-        {
-          "text": "Pagamento (id, pedido_id, gateway, status, valor, dados_transação)"
-        },
-        {
-          "text": "Cupom (id, código, tipo, valor, validade, regras)"
-        },
-        {
-          "text": "LogStatusPedido (id, pedido_id, status, ator, timestamp, observação)"
-        },
-        {
-          "text": "(Detalhar o diagrama ER em anexo / fase de modelagem técnica)."
-        }
-      ]
-    },
-    {
-      "title": "7. APIs / Endpoints (exemplo)",
-      "requirements": [
-        {
-          "text": "Observação: rotas abaixo são exemplos RESTful — autenticação via JWT/OAuth2 para endpoints privados."
-        }
-      ]
-    },
-    {
-      "title": "Público",
-      "requirements": [
-        {
-          "text": "GET /api/produtos — lista produtos (filtros query params)."
-        },
-        {
-          "text": "GET /api/produtos/{slug|sku} — detalhe do produto."
-        },
-        {
-          "text": "GET /api/categorias — lista categorias."
-        },
-        {
-          "text": "POST /api/checkout/estimate — estimativa de frete (body: cep, itens)."
-        }
-      ]
-    },
-    {
-      "title": "Cliente / Autenticado",
-      "requirements": [
-        {
-          "text": "POST /api/auth/login — login."
-        },
-        {
-          "text": "POST /api/auth/register — cadastro."
-        },
-        {
-          "text": "GET /api/clientes/me — dados do cliente."
-        },
-        {
-          "text": "POST /api/carrinho — criar/atualizar carrinho."
-        },
-        {
-          "text": "POST /api/checkout — finalizar compra."
-        },
-        {
-          "text": "GET /api/pedidos/{id} — acompanhar pedido."
-        }
-      ]
-    },
-    {
-      "title": "Admin",
-      "requirements": [
-        {
-          "text": "POST /api/admin/produtos — criar produto."
-        },
-        {
-          "text": "PUT /api/admin/produtos/{id} — atualizar produto."
-        },
-        {
-          "text": "GET /api/admin/pedidos — listar pedidos."
-        },
-        {
-          "text": "POST /api/admin/estoque/ajuste — ajuste manual de estoque."
-        },
-        {
-          "text": "Incluir contratos OpenAPI/Swagger na fase técnica com exemplos e schemas."
-        }
-      ]
-    },
-    {
-      "title": "8. Telas e Fluxos (UI/UX)",
-      "requirements": []
-    },
-    {
-      "title": "Páginas principais",
-      "requirements": [
-        {
-          "text": "Home (promoções, banners, categorias em destaque, produtos em destaque)."
-        },
-        {
-          "text": "Lista de Produtos (grid, filtros na lateral ou top para mobile)."
-        },
-        {
-          "text": "Página de Produto (galeria de imagens, seleção de variações, disponibilidade por tamanho, tabela de medidas, avaliações)."
-        },
-        {
-          "text": "Carrinho."
-        },
-        {
-          "text": "Checkout (multi‑step)."
-        },
-        {
-          "text": "Minha Conta (perfil, endereços, pedidos, wishlist)."
-        },
-        {
-          "text": "Painel Admin (dashboard, produtos, pedidos, relatórios)."
-        }
-      ]
-    },
-    {
-      "title": "Fluxo de compra (resumido)",
-      "requirements": [
-        {
-          "text": "Usuário encontra produto → escolhe variação → adiciona ao carrinho."
-        },
-        {
-          "text": "Vai ao checkout → informa endereço → escolhe frete → escolhe pagamento → revisa → conclui."
-        },
-        {
-          "text": "Sistema processa pagamento → atualiza status do pedido → reserva estoque → envia confirmações."
-        }
-      ]
-    },
-    {
-      "title": "9. Regras de negócio críticas e cenários especiais",
-      "requirements": []
-    },
-    {
-      "title": "Reserva de estoque: definir se reserva ocorre no momento da finalização do pedido ou apenas após confirmação do pagamento (configurável).",
-      "requirements": []
-    },
-    {
-      "title": "Variações esgotadas: se variação estiver esgotada, sugerir variação alternativa e permitir notificação de reposição.",
-      "requirements": []
-    },
-    {
-      "title": "Cupom combinado: regras sobre combinação de cupons (permitir apenas 1 por pedido ou empilhar?).",
-      "requirements": []
-    },
-    {
-      "title": "Preço exibido vs. preço cobrado: clareza em exibição de preço com desconto e impostos.",
-      "requirements": []
-    },
-    {
-      "title": "Endereço inválido: validar CEP e sugerir correção antes de calcular frete.",
-      "requirements": []
-    },
-    {
-      "title": "Timeout em checkout: carrinho de convidados expirando após 30 dias; reservas temporárias expiram em X minutos se pagamento não confirmado.",
-      "requirements": []
-    },
-    {
-      "title": "10. Critérios de aceitação / Casos de teste principais",
-      "requirements": [
-        {
-          "text": "Para cada RF acima precisamos de testes. Exemplos essenciais:"
-        },
-        {
-          "text": "CA1: Cadastro: criar conta com e‑mail válido → receber e‑mail de confirmação → login com credenciais."
-        },
-        {
-          "text": "CA2: Busca e filtro: pesquisar por termo e aplicar filtro de tamanho/preço → somente itens filtrados exibidos."
-        },
-        {
-          "text": "CA3: Adicionar ao carrinho e alterar quantidade: estoque atualizado e mensagens quando insuficiente."
-        },
-        {
-          "text": "CA4: Checkout com cartão: simular pagamento aprovado e recusado → pedidos com status corretos."
-        },
-        {
-          "text": "CA5: Emissão de nota: após pagamento, NF‑e gerada e vinculada ao pedido (se aplicável)."
-        },
-        {
-          "text": "CA6: Admin: criar produto com variações → verificar que aparece no catálogo público."
-        },
-        {
-          "text": "CA7: Estorno: solicitar reembolso → gateway processa estorno e status atualizado."
-        },
-        {
-          "text": "(Detalhar suite de testes com casos, passos, dados de teste e resultados esperados)."
-        }
-      ]
-    },
-    {
-      "title": "11. Integrações externas",
-      "requirements": [
-        {
-          "text": "Gateway de pagamento (ex.: Pagar.me, Stone, Gerencianet, Stripe) — tokenização de cartão, webhook para atualização de status."
-        },
-        {
-          "text": "Transportadoras (API dos Correios e/ou integradores como Melhor Envio) — cálculo de frete e geração de etiquetas."
-        },
-        {
-          "text": "ERP/Contabilidade (opcional) — exportação de pedidos/ notas / integração via API ou arquivo."
-        },
-        {
-          "text": "Serviço de e‑mail (SMTP, SendGrid, Mailgun) para envio de notificações."
-        },
-        {
-          "text": "Ferramentas de analytics / pixel (Google Analytics, Meta Pixel)."
-        }
-      ]
-    },
-    {
-      "title": "12. Segurança e conformidade",
-      "requirements": [
-        {
-          "text": "TLS obrigatório em todas as páginas."
-        },
-        {
-          "text": "Armazenar senhas com hashing forte (bcrypt/argon2) e salts."
-        },
-        {
-          "text": "Tokenização de dados sensíveis (cartões) - não armazenar PANs em texto claro."
-        },
-        {
-          "text": "Logs de auditoria para alterações de pedidos e financeiros."
-        },
-        {
-          "text": "Mecanismos de proteção contra bots e fraudes (reCAPTCHA, provider antifraude para transações)."
-        },
-        {
-          "text": "Mecanismo para exportação/remoção de dados pessoais conforme LGPD."
-        }
-      ]
-    },
-    {
-      "title": "13. Implantação e Operação",
-      "requirements": [
-        {
-          "text": "Ambiente mínimo: Infra em cloud (ex.: AWS/GCP/Azure) com balanceador, autoscaling, banco de dados gerenciado e CDN para imagens."
-        },
-        {
-          "text": "CI/CD: pipeline automatizado para testes, build e deploy."
-        },
-        {
-          "text": "Backups diários de banco de dados e políticas de retenção."
-        },
-        {
-          "text": "Monitoramento: métricas de aplicação, logs centralizados (ELK/Datadog), alertas para erros 5xx e quedas de performance."
-        }
-      ]
-    },
-    {
-      "title": "14. Roadmap de funcionalidades futuras (opcionais)",
-      "requirements": [
-        {
-          "text": "Programa de fidelidade e pontos."
-        },
-        {
-          "text": "Marketplace (multi‑vendedor)."
-        },
-        {
-          "text": "Recomendações com Machine Learning (personalização)."
-        },
-        {
-          "text": "Chatbot para atendimento automático."
-        },
-        {
-          "text": "Integração com lojas físicas / PDV."
-        }
-      ]
-    },
-    {
-      "title": "15. Glossário",
-      "requirements": [
-        {
-          "text": "SKU: Stock Keeping Unit — unidade de manutenção de estoque."
-        },
-        {
-          "text": "NF‑e: Nota Fiscal eletrônica."
-        },
-        {
-          "text": "RBAC: Role Based Access Control."
-        },
-        {
-          "text": "PIX: sistema de pagamento instantâneo brasileiro."
-        }
-      ]
-    },
-    {
-      "title": "16. Anexo — Modelos de telas / Exemplo de payloads",
-      "requirements": [
-        {
-          "text": "Incluir em anexo (fase de design técnico): protótipos de telas (Figma), Swagger/OpenAPI, ER diagram, exemplos de payload JSON para endpoints de checkout e webhooks."
-        }
-      ]
-    },
-    {
-      "title": "17. Observações finais",
-      "requirements": [
-        {
-          "text": "Documento pensado para ser referência funcional. Nas próximas fases (engenharia) é necessário:"
-        },
-        {
-          "text": "Refinamento técnico (API contract, DTOs, validações)."
-        },
-        {
-          "text": "Diagrama ER e scripts de migração."
-        },
-        {
-          "text": "Protótipos de UI detalhados e testes de usabilidade."
+          "text": "Documento funcional completo para início de análise técnica, modelagem de banco, fluxos detalhados e protótipos de tela. Pode ser expandido conforme novas necessidades do mercadinho."
         }
       ]
     }

@@ -1,0 +1,885 @@
+{
+  "analise_requisitos": {
+    "entidades": [
+      "Veículo",
+      "Cliente",
+      "Proposta",
+      "Usuário (Administrador, Vendedor, Avaliador, Financeiro)",
+      "Contrato",
+      "Avaliação",
+      "Estoque",
+      "Relatório"
+    ],
+    "atributos_criticos": [
+      "Veículo: Marca, Modelo, Ano/modelo, Cor, Tipo de combustível, Quilometragem (usados), Preço de venda, Chassi, Status",
+      "Cliente: Nome completo, CPF, Telefone, E-mail, Endereço",
+      "Proposta: id_cliente, id_veiculo, valor_final, status, desconto, validade",
+      "Avaliação: Fotos, Condições, Preço sugerido",
+      "Usuário: Papel (permissões)"
+    ],
+    "regras_negocio": [
+      "R001: Só é possível adicionar um veículo usado ao estoque com status 'Disponível' após o fluxo de avaliação e aprovação.",
+      "R002: A avaliação de veículo usado deve incluir no mínimo 8 fotos.",
+      "R003: A margem de lucro sobre o veículo (Preço Venda - Preço Compra) / Preço Venda deve ser maior ou igual à 'Margem Mínima' configurável pelo Administrador.",
+      "R004: Se o desconto aplicado em uma proposta de venda exceder o limite predefinido para o Vendedor, a proposta requer aprovação do Administrador.",
+      "R005: Veículos com status 'Vendido' não podem retornar ao estoque com status 'Disponível' sem um processo formal de devolução/cancelamento.",
+      "R006: Propostas de venda expiram automaticamente após 24 horas (período configurável pelo Administrador).",
+      "R007: Administrador gerencia usuários, permissões e configura regras de negócio (ex: margem mínima, limite de desconto para vendedor)."
+    ],
+    "fluxos": {
+      "principal": [
+        "Fluxo de Compra de Veículos Usados: Cadastro inicial do cliente e veículo -> Avaliação (Avaliador) -> Aprovação do valor (Administrador) -> Geração de Contrato de Compra -> Entrada no Estoque (Status: 'Disponível').",
+        "Fluxo de Venda de Veículos (Novos e Usados): Cliente demonstra interesse -> Vendedor cria Proposta de Venda -> Negociação e aplicação de descontos -> (Aprovação do Administrador, se necessário) -> Geração de Contrato de Venda -> Registro de Pagamento (Financeiro) -> Baixa no Estoque (Status: 'Vendido').",
+        "Workflow de Avaliação de Carro Usado: Vendedor registra dados básicos -> Avaliador inspeciona e insere dados/fotos -> Sistema registra valor sugerido -> Administrador aprova/ajusta valor -> Sistema muda status para 'Aguardando documentação' -> Após documentos, status muda para 'Disponível para venda'."
+      ],
+      "alternativos": [
+        "Administrador ajusta o valor sugerido de compra durante o processo de avaliação de um veículo usado.",
+        "Administrador aprova uma proposta de venda que contém um desconto acima do limite do Vendedor.",
+        "Cliente desiste da compra, cancelando a proposta de venda."
+      ],
+      "excecoes": [
+        "Tentativa de adicionar um veículo usado ao estoque sem passar pelo processo completo de avaliação.",
+        "Proposta de venda expira antes de ser concluída ou aprovada.",
+        "Tentativa de finalizar uma venda com um veículo que não está 'Disponível' no estoque.",
+        "Tentativa de acesso a funcionalidades por um usuário sem a devida permissão."
+      ]
+    },
+    "integracoes": [],
+    "riscos": [
+      "Falha na validação de regras de negócio (margem mínima, quantidade de fotos na avaliação, expiração de proposta).",
+      "Problemas de segurança no controle de acesso por papel ou na auditoria de logs de alterações críticas.",
+      "Degradação de performance do sistema sob carga, resultando em tempos de resposta lentos.",
+      "Inconsistência de dados (status do veículo, informações financeiras) devido a erros em transições de status ou operações.",
+      "Erros na geração de documentos (contratos, recibos) ou relatórios financeiros e operacionais."
+    ]
+  },
+  "cenarios_funcionais": [
+    {
+      "id": "TC-FUNC-001",
+      "titulo": "Cadastrar Veículo Novo com Sucesso",
+      "categoria": "CRUD",
+      "prioridade": "Crítica",
+      "tecnica_teste": "Particionamento de Equivalência",
+      "descricao": "Verificar se um Administrador ou Vendedor pode cadastrar um veículo novo com todos os dados obrigatórios.",
+      "pre_condicoes": [
+        "Usuário 'Vendedor' logado no sistema.",
+        "Acessar a tela de Cadastro de Veículos."
+      ],
+      "dados_teste": {
+        "marca": "Hyundai",
+        "modelo": "HB20",
+        "ano_modelo": "2025/2025",
+        "cor": "Branco",
+        "tipo_combustivel": "Gasolina",
+        "quilometragem": "0",
+        "preco_venda": "95000.00",
+        "chassi": "ABC123DEF456GHI789",
+        "status": "Disponível"
+      },
+      "passos": [
+        "1. Na tela de Cadastro de Veículos, preencher os campos obrigatórios com os dados de teste para um veículo novo (quilometragem 0).",
+        "2. Clicar no botão 'Salvar' ou 'Cadastrar Veículo'."
+      ],
+      "resultado_esperado": "O sistema deve exibir uma mensagem de sucesso, e o veículo deve ser listado no estoque com o status 'Disponível' e todos os dados preenchidos corretamente.",
+      "criterios_aceitacao": [
+        "Veículo novo cadastrado e visível no estoque.",
+        "Status inicial do veículo é 'Disponível'."
+      ],
+      "pos_condicoes": "O veículo cadastrado permanece no estoque."
+    },
+    {
+      "id": "TC-FUNC-002",
+      "titulo": "Cadastrar Veículo Usado com Sucesso",
+      "categoria": "CRUD",
+      "prioridade": "Crítica",
+      "tecnica_teste": "Particionamento de Equivalência",
+      "descricao": "Verificar se um Administrador ou Vendedor pode cadastrar um veículo usado com todos os dados obrigatórios, incluindo quilometragem.",
+      "pre_condicoes": [
+        "Usuário 'Vendedor' logado no sistema.",
+        "Acessar a tela de Cadastro de Veículos."
+      ],
+      "dados_teste": {
+        "marca": "Volkswagen",
+        "modelo": "Gol 1.6",
+        "ano_modelo": "2018/2018",
+        "cor": "Prata",
+        "tipo_combustivel": "Flex",
+        "quilometragem": "62000",
+        "preco_venda": "55000.00",
+        "chassi": "XYZ987PQR654STU321",
+        "status": "Aguardando Avaliação"
+      },
+      "passos": [
+        "1. Na tela de Cadastro de Veículos, preencher os campos obrigatórios com os dados de teste para um veículo usado (quilometragem > 0).",
+        "2. Clicar no botão 'Salvar' ou 'Cadastrar Veículo'."
+      ],
+      "resultado_esperado": "O sistema deve exibir uma mensagem de sucesso, e o veículo deve ser listado no estoque com o status 'Aguardando Avaliação'.",
+      "criterios_aceitacao": [
+        "Veículo usado cadastrado e visível no estoque.",
+        "Quilometragem registrada corretamente.",
+        "Status inicial do veículo é 'Aguardando Avaliação'."
+      ],
+      "pos_condicoes": "O veículo cadastrado permanece no estoque aguardando avaliação."
+    },
+    {
+      "id": "TC-FUNC-003",
+      "titulo": "Editar Dados de Veículo Existente",
+      "categoria": "CRUD",
+      "prioridade": "Alta",
+      "tecnica_teste": "Caminho Básico",
+      "descricao": "Verificar a capacidade de um usuário autorizado de editar informações de um veículo no estoque.",
+      "pre_condicoes": [
+        "Usuário 'Vendedor' ou 'Administrador' logado no sistema.",
+        "Existir um veículo cadastrado e com status 'Disponível' no estoque (e.g., veículo do TC-FUNC-001)."
+      ],
+      "dados_teste": {
+        "id_veiculo": "ID_VEICULO_EXISTENTE",
+        "novo_preco_venda": "92000.00",
+        "nova_cor": "Preto"
+      },
+      "passos": [
+        "1. Na tela de Lista de Veículos, localizar o veículo de teste.",
+        "2. Clicar na ação 'Editar' para o veículo selecionado.",
+        "3. Alterar o 'Preço de Venda' para '92000.00' e a 'Cor' para 'Preto'.",
+        "4. Clicar no botão 'Salvar'."
+      ],
+      "resultado_esperado": "O sistema deve exibir mensagem de sucesso, e os dados do veículo (Preço de Venda e Cor) devem ser atualizados e refletidos na lista de estoque.",
+      "criterios_aceitacao": [
+        "Dados do veículo atualizados com sucesso.",
+        "Alterações visíveis na tela de consulta de estoque."
+      ],
+      "pos_condicoes": "Veículo com os dados atualizados no estoque."
+    },
+    {
+      "id": "TC-FUNC-004",
+      "titulo": "Realizar Fluxo Completo de Compra de Veículo Usado (Happy Path)",
+      "categoria": "Fluxo",
+      "prioridade": "Crítica",
+      "tecnica_teste": "Teste de Fluxo",
+      "descricao": "Verificar o fluxo completo de compra de um veículo usado, desde o cadastro inicial até a entrada no estoque como 'Disponível'.",
+      "pre_condicoes": [
+        "Usuário 'Vendedor' logado e um veículo usado cadastrado com status 'Aguardando Avaliação' (e.g., veículo do TC-FUNC-002).",
+        "Usuário 'Avaliador' logado.",
+        "Usuário 'Administrador' logado."
+      ],
+      "dados_teste": {
+        "id_veiculo": "ID_VEICULO_USADO_AGUARDANDO_AVALIACAO",
+        "fotos_avaliacao": "8 fotos válidas",
+        "condicoes_veiculo": "Bom estado",
+        "preco_sugerido_compra": "40000.00",
+        "margem_minima_configurada": "20%"
+      },
+      "passos": [
+        "1. Logar como 'Avaliador'. Acessar a tela de Avaliação para o veículo de teste.",
+        "2. Inserir 8 fotos válidas do veículo e preencher o checklist de conservação.",
+        "3. Inserir 'Preço Sugerido de Compra' (ex: 40000.00).",
+        "4. Clicar em 'Finalizar Avaliação'.",
+        "5. Logar como 'Administrador'. Acessar a tela de Avaliações Pendentes.",
+        "6. Aprovar o valor sugerido de compra para o veículo, garantindo que a regra de margem mínima seja atendida.",
+        "7. Logar como 'Vendedor'. Acessar a tela do veículo avaliado.",
+        "8. Gerar e Imprimir o 'Contrato de Compra' do veículo com o valor acordado.",
+        "9. Confirmar a entrada do veículo no estoque."
+      ],
+      "resultado_esperado": "O veículo usado deve passar por todas as etapas do fluxo, com sucesso, e ter seu status final alterado para 'Disponível' no estoque.",
+      "criterios_aceitacao": [
+        "Avaliação concluída com 8 fotos e preço sugerido.",
+        "Administrador aprova a avaliação e o valor.",
+        "Contrato de compra gerado com sucesso.",
+        "Veículo com status 'Disponível' no estoque."
+      ],
+      "pos_condicoes": "Veículo disponível para venda no estoque."
+    },
+    {
+      "id": "TC-FUNC-005",
+      "titulo": "Realizar Fluxo Completo de Venda de Veículo (Happy Path, sem aprovação de Admin)",
+      "categoria": "Fluxo",
+      "prioridade": "Crítica",
+      "tecnica_teste": "Teste de Fluxo",
+      "descricao": "Verificar o fluxo completo de venda de um veículo, desde a criação da proposta até a baixa no estoque, sem necessidade de aprovação do Administrador.",
+      "pre_condicoes": [
+        "Usuário 'Vendedor' e 'Financeiro' logados no sistema.",
+        "Existir um veículo com status 'Disponível' no estoque (e.g., veículo do TC-FUNC-001).",
+        "Existir um cliente cadastrado."
+      ],
+      "dados_teste": {
+        "id_veiculo": "ID_VEICULO_DISPONIVEL",
+        "id_cliente": "ID_CLIENTE_EXISTENTE",
+        "desconto_aplicado": "500.00",
+        "limite_desconto_vendedor": "1000.00",
+        "forma_pagamento": "PIX"
+      },
+      "passos": [
+        "1. Logar como 'Vendedor'. Na tela de Lista de Veículos, selecionar o veículo de teste e iniciar uma 'Proposta de Venda'.",
+        "2. Associar o 'Cliente' de teste à proposta.",
+        "3. Aplicar um desconto (ex: 500.00) que esteja dentro do limite do Vendedor.",
+        "4. Clicar em 'Gerar Proposta' e, em seguida, 'Gerar Contrato'.",
+        "5. Logar como 'Financeiro'. Acessar a proposta/contrato gerado.",
+        "6. Registrar a 'Forma de Pagamento' como 'PIX' e confirmar o pagamento.",
+        "7. Clicar em 'Finalizar Venda'."
+      ],
+      "resultado_esperado": "A proposta e o contrato de venda devem ser gerados com sucesso, o pagamento registrado, e o status do veículo no estoque deve mudar para 'Vendido'.",
+      "criterios_aceitacao": [
+        "Proposta de venda criada e validada.",
+        "Contrato de venda gerado automaticamente.",
+        "Pagamento registrado pelo Financeiro.",
+        "Status do veículo alterado para 'Vendido'.",
+        "Veículo removido do estoque 'Disponível'."
+      ],
+      "pos_condicoes": "Veículo com status 'Vendido' e cliente com histórico de compra atualizado."
+    },
+    {
+      "id": "TC-FUNC-006",
+      "titulo": "Fluxo de Venda com Desconto Exigindo Aprovação do Administrador",
+      "categoria": "Fluxo",
+      "prioridade": "Alta",
+      "tecnica_teste": "Caminho Alternativo",
+      "descricao": "Validar o fluxo de venda onde o desconto aplicado exige aprovação do Administrador devido a exceder o limite do Vendedor.",
+      "pre_condicoes": [
+        "Usuário 'Vendedor', 'Administrador' e 'Financeiro' logados.",
+        "Existir um veículo 'Disponível' e um cliente cadastrado.",
+        "Limite de desconto do Vendedor configurado (ex: R$ 1000,00)."
+      ],
+      "dados_teste": {
+        "id_veiculo": "ID_VEICULO_DISPONIVEL",
+        "id_cliente": "ID_CLIENTE_EXISTENTE",
+        "desconto_aplicado": "1500.00",
+        "limite_desconto_vendedor": "1000.00"
+      },
+      "passos": [
+        "1. Logar como 'Vendedor'. Criar uma Proposta de Venda para o veículo e cliente de teste.",
+        "2. Aplicar um desconto (ex: R$ 1500,00) que exceda o limite configurado para o Vendedor.",
+        "3. Clicar em 'Gerar Proposta'. O sistema deve indicar que a proposta necessita de aprovação.",
+        "4. Logar como 'Administrador'. Acessar a tela de 'Propostas Pendentes de Aprovação'.",
+        "5. Analisar e 'Aprovar' a proposta com o desconto.",
+        "6. Logar novamente como 'Vendedor'. Acessar a proposta aprovada.",
+        "7. Gerar o 'Contrato' e seguir com o registro de pagamento pelo 'Financeiro' (como no TC-FUNC-005)."
+      ],
+      "resultado_esperado": "A proposta deve ser criada, entrar em estado de 'Aguardando Aprovação', ser aprovada pelo Administrador, e o fluxo de venda deve ser concluído com sucesso, resultando no veículo com status 'Vendido'.",
+      "criterios_aceitacao": [
+        "Proposta requer aprovação do Administrador corretamente.",
+        "Administrador consegue aprovar a proposta.",
+        "Fluxo de venda finalizado após aprovação do Administrador.",
+        "Status do veículo alterado para 'Vendido'."
+      ],
+      "pos_condicoes": "Veículo vendido, cliente com histórico de compra e logs de aprovação registrados."
+    },
+    {
+      "id": "TC-FUNC-007",
+      "titulo": "Cadastrar Novo Cliente com Todos os Dados Obrigatórios",
+      "categoria": "CRUD",
+      "prioridade": "Alta",
+      "tecnica_teste": "Particionamento de Equivalência",
+      "descricao": "Verificar se um Vendedor pode cadastrar um novo cliente preenchendo todos os campos obrigatórios.",
+      "pre_condicoes": [
+        "Usuário 'Vendedor' logado no sistema.",
+        "Acessar a tela de Gestão de Clientes."
+      ],
+      "dados_teste": {
+        "nome_completo": "João da Silva",
+        "cpf": "123.456.789-00",
+        "telefone": "(11) 98765-4321",
+        "email": "joao.silva@email.com",
+        "endereco": "Rua das Flores, 123 - Centro - São Paulo/SP"
+      },
+      "passos": [
+        "1. Na tela de Gestão de Clientes, clicar em 'Novo Cliente'.",
+        "2. Preencher todos os campos obrigatórios (Nome, CPF, Telefone, E-mail, Endereço) com os dados de teste.",
+        "3. Clicar no botão 'Salvar'."
+      ],
+      "resultado_esperado": "O sistema deve exibir uma mensagem de sucesso, e o novo cliente deve ser listado na tela de Gestão de Clientes.",
+      "criterios_aceitacao": [
+        "Cliente cadastrado com sucesso e visível na lista.",
+        "Todos os campos obrigatórios foram registrados corretamente."
+      ],
+      "pos_condicoes": "Novo cliente disponível para ser associado a propostas e vendas."
+    },
+    {
+      "id": "TC-FUNC-008",
+      "titulo": "Consultar Histórico de Compras de um Cliente",
+      "categoria": "Fluxo",
+      "prioridade": "Média",
+      "tecnica_teste": "Caminho Básico",
+      "descricao": "Verificar a funcionalidade de consultar o histórico de compras de um cliente específico.",
+      "pre_condicoes": [
+        "Usuário 'Vendedor' ou 'Administrador' logado no sistema.",
+        "Existir um cliente cadastrado que já tenha realizado pelo menos uma compra (e.g., cliente do TC-FUNC-005)."
+      ],
+      "dados_teste": {
+        "id_cliente": "ID_CLIENTE_COM_HISTORICO"
+      },
+      "passos": [
+        "1. Na tela de Gestão de Clientes, localizar o cliente de teste.",
+        "2. Clicar na opção 'Visualizar Histórico' ou 'Detalhes do Cliente'."
+      ],
+      "resultado_esperado": "O sistema deve exibir uma tela com os detalhes do cliente, incluindo uma lista de todas as compras realizadas, com informações relevantes como veículo, data da compra e valor.",
+      "criterios_aceitacao": [
+        "Histórico de compras exibido corretamente.",
+        "Detalhes das compras são precisos e correspondem aos dados registrados."
+      ],
+      "pos_condicoes": ""
+    },
+    {
+      "id": "TC-FUNC-009",
+      "titulo": "Visualizar Estoque de Veículos com Filtros",
+      "categoria": "Fluxo",
+      "prioridade": "Alta",
+      "tecnica_teste": "Análise de Valores Limite",
+      "descricao": "Verificar a funcionalidade de filtragem e exibição do estoque de veículos por diversos critérios.",
+      "pre_condicoes": [
+        "Usuário 'Vendedor' ou 'Administrador' logado no sistema.",
+        "Existirem múltiplos veículos (novos e usados) cadastrados no estoque com diferentes marcas, modelos, status e faixas de preço."
+      ],
+      "dados_teste": {
+        "filtro_marca": "Hyundai",
+        "filtro_status": "Disponível",
+        "filtro_preco_min": "90000",
+        "filtro_preco_max": "100000"
+      },
+      "passos": [
+        "1. Acessar a tela 'Lista de Veículos'.",
+        "2. Aplicar o filtro por 'Marca' = 'Hyundai'.",
+        "3. Aplicar o filtro por 'Status' = 'Disponível'.",
+        "4. Aplicar o filtro por 'Preço de Venda' entre '90000' e '100000'.",
+        "5. Clicar em 'Aplicar Filtros'."
+      ],
+      "resultado_esperado": "A lista de veículos deve ser atualizada para exibir apenas os veículos que correspondem a todos os critérios de filtro aplicados. A contagem de veículos exibidos deve ser correta.",
+      "criterios_aceitacao": [
+        "Filtros aplicados corretamente e resultados precisos.",
+        "Nenhum veículo que não atenda aos filtros é exibido.",
+        "Contagem de resultados atualizada."
+      ],
+      "pos_condicoes": ""
+    },
+    {
+      "id": "TC-FUNC-010",
+      "titulo": "Gerar Relatório de Vendas por Período",
+      "categoria": "Fluxo",
+      "prioridade": "Média",
+      "tecnica_teste": "Caminho Básico",
+      "descricao": "Verificar a geração de um relatório de vendas detalhado para um período específico.",
+      "pre_condicoes": [
+        "Usuário 'Administrador' ou 'Financeiro' logado no sistema.",
+        "Existirem vendas registradas dentro do período de teste."
+      ],
+      "dados_teste": {
+        "data_inicio": "01/10/2024",
+        "data_fim": "31/10/2024"
+      },
+      "passos": [
+        "1. Acessar a tela de 'Relatórios'.",
+        "2. Selecionar o 'Relatório de Vendas por Período'.",
+        "3. Informar 'Data de Início' como '01/10/2024' e 'Data de Fim' como '31/10/2024'.",
+        "4. Clicar em 'Gerar Relatório'."
+      ],
+      "resultado_esperado": "O sistema deve gerar e exibir um relatório contendo a lista de todas as vendas realizadas no período especificado, incluindo valor total das vendas e número de veículos vendidos. Os dados devem ser consistentes com as vendas registradas.",
+      "criterios_aceitacao": [
+        "Relatório gerado com sucesso.",
+        "Dados de vendas, valores e quantidade de veículos estão corretos e correspondem ao período.",
+        "Nenhuma venda fora do período é incluída."
+      ],
+      "pos_condicoes": ""
+    }
+  ],
+  "cenarios_negativos": [
+    {
+      "id": "TC-NEG-001",
+      "titulo": "Tentar Adicionar Veículo Usado ao Estoque sem Avaliação Completa",
+      "categoria": "RegraNegocio",
+      "prioridade": "Crítica",
+      "tecnica_teste": "Teste de Regra de Negócio",
+      "descricao": "Verificar se o sistema impede que um veículo usado seja marcado como 'Disponível' sem ter passado por todas as etapas da avaliação e aprovação.",
+      "pre_condicoes": [
+        "Usuário 'Vendedor' logado.",
+        "Um veículo usado cadastrado com status 'Aguardando Avaliação'."
+      ],
+      "dados_teste": {
+        "id_veiculo": "ID_VEICULO_USADO_AGUARDANDO_AVALIACAO"
+      },
+      "passos": [
+        "1. Logar como 'Vendedor'.",
+        "2. Acessar os detalhes do veículo usado que está 'Aguardando Avaliação'.",
+        "3. Tentar alterar diretamente o status do veículo para 'Disponível' ou tentar forçar a entrada no estoque como 'Disponível' sem que a avaliação tenha sido concluída e aprovada.",
+        "4. Tentar finalizar a compra de um veículo usado sem a aprovação do Administrador no valor."
+      ],
+      "resultado_esperado": "O sistema deve exibir uma mensagem de erro informando que o veículo não pode ter seu status alterado para 'Disponível' ou entrar no estoque de venda sem uma avaliação e aprovação válidas. A operação deve ser impedida.",
+      "criterios_aceitacao": [
+        "Sistema impede a mudança de status/entrada em estoque de venda.",
+        "Mensagem de erro clara e informativa é exibida."
+      ],
+      "pos_condicoes": "O status do veículo permanece 'Aguardando Avaliação'."
+    },
+    {
+      "id": "TC-NEG-002",
+      "titulo": "Concluir Avaliação de Usado com Menos de 8 Fotos",
+      "categoria": "RegraNegocio",
+      "prioridade": "Alta",
+      "tecnica_teste": "Teste de Regra de Negócio",
+      "descricao": "Verificar se o sistema impõe a regra de mínimo de 8 fotos para a conclusão de uma avaliação de veículo usado.",
+      "pre_condicoes": [
+        "Usuário 'Avaliador' logado.",
+        "Um veículo usado cadastrado com status 'Aguardando Avaliação' e com avaliação iniciada."
+      ],
+      "dados_teste": {
+        "id_veiculo": "ID_VEICULO_USADO_AVALIACAO_INICIADA",
+        "fotos_avaliacao": "7 fotos válidas"
+      },
+      "passos": [
+        "1. Logar como 'Avaliador'. Acessar a tela de Avaliação para o veículo de teste.",
+        "2. Realizar o upload de apenas 7 fotos do veículo.",
+        "3. Preencher os demais campos da avaliação.",
+        "4. Clicar em 'Finalizar Avaliação'."
+      ],
+      "resultado_esperado": "O sistema deve exibir uma mensagem de erro informando que é necessário um mínimo de 8 fotos para concluir a avaliação e impedir a finalização da avaliação.",
+      "criterios_aceitacao": [
+        "Mensagem de erro é exibida sobre a quantidade mínima de fotos.",
+        "A avaliação não é concluída e o status do veículo não avança."
+      ],
+      "pos_condicoes": "Avaliação permanece em progresso."
+    },
+    {
+      "id": "TC-NEG-003",
+      "titulo": "Aprovar Compra de Usado Violando Margem Mínima Configurada",
+      "categoria": "RegraNegocio",
+      "prioridade": "Crítica",
+      "tecnica_teste": "Teste de Regra de Negócio",
+      "descricao": "Verificar se o sistema impede a aprovação de uma compra de veículo usado se o preço de compra sugerido (ou ajustado) violar a margem mínima de lucro configurada.",
+      "pre_condicoes": [
+        "Usuário 'Administrador' logado.",
+        "Um veículo usado com avaliação finalizada e preço sugerido (que viola a margem mínima se o preço de venda for X) aguardando aprovação do Administrador.",
+        "Margem mínima de lucro configurada para 20%."
+      ],
+      "dados_teste": {
+        "id_veiculo_avaliado": "ID_VEICULO_USADO_AVALIADO",
+        "preco_venda_estimado": "50000.00",
+        "preco_sugerido_compra_violando_margem": "45000.00"
+      },
+      "passos": [
+        "1. Logar como 'Administrador'. Acessar a tela de 'Avaliações Pendentes de Aprovação'.",
+        "2. Selecionar o veículo de teste, onde o preço de compra sugerido (45000.00) resulta em uma margem inferior a 20% do preço de venda estimado (50000.00).",
+        "3. Tentar 'Aprovar' a avaliação com o preço de compra sugerido."
+      ],
+      "resultado_esperado": "O sistema deve exibir uma mensagem de erro informando que a aprovação não pode ser realizada porque o valor de compra viola a margem mínima de lucro exigida. A aprovação deve ser impedida.",
+      "criterios_aceitacao": [
+        "Mensagem de erro clara sobre a violação da margem mínima.",
+        "A aprovação da compra é negada/impedida.",
+        "Status da avaliação não é alterado para 'Aprovado'."
+      ],
+      "pos_condicoes": "Avaliação permanece pendente de aprovação ou requer ajuste de preço."
+    },
+    {
+      "id": "TC-NEG-004",
+      "titulo": "Tentar Finalizar Venda com Desconto Acima do Limite sem Aprovação do Administrador",
+      "categoria": "RegraNegocio",
+      "prioridade": "Alta",
+      "tecnica_teste": "Teste de Regra de Negócio",
+      "descricao": "Verificar se um Vendedor é impedido de finalizar uma proposta de venda com um desconto que excede seu limite sem a aprovação prévia de um Administrador.",
+      "pre_condicoes": [
+        "Usuário 'Vendedor' logado.",
+        "Um veículo 'Disponível' e um cliente cadastrado.",
+        "Limite de desconto do Vendedor configurado (ex: R$ 1000,00)."
+      ],
+      "dados_teste": {
+        "id_veiculo": "ID_VEICULO_DISPONIVEL",
+        "id_cliente": "ID_CLIENTE_EXISTENTE",
+        "desconto_aplicado": "1500.00"
+      },
+      "passos": [
+        "1. Logar como 'Vendedor'. Criar uma Proposta de Venda para o veículo e cliente de teste.",
+        "2. Aplicar um desconto (ex: R$ 1500,00) que exceda o limite configurado para o Vendedor.",
+        "3. Tentar prosseguir para a geração do contrato ou finalização da venda diretamente, sem passar pelo fluxo de aprovação do Administrador."
+      ],
+      "resultado_esperado": "O sistema deve exibir uma mensagem de erro ou redirecionar para o fluxo de aprovação, impedindo que o Vendedor finalize a venda sem a permissão do Administrador para o desconto aplicado.",
+      "criterios_aceitacao": [
+        "Vendedor é impedido de finalizar a venda.",
+        "Mensagem de erro ou redirecionamento para aprovação é exibido."
+      ],
+      "pos_condicoes": "Proposta de venda permanece em 'Aguardando Aprovação' ou 'Rascunho'."
+    },
+    {
+      "id": "TC-NEG-005",
+      "titulo": "Tentativa de Edição/Remoção de Veículo com Status 'Vendido'",
+      "categoria": "RegraNegocio",
+      "prioridade": "Média",
+      "tecnica_teste": "Teste de Regra de Negócio",
+      "descricao": "Verificar se o sistema impede alterações ou remoção direta de um veículo que já possui o status 'Vendido' sem um processo formal de devolução.",
+      "pre_condicoes": [
+        "Usuário 'Vendedor' ou 'Administrador' logado.",
+        "Existir um veículo com status 'Vendido' (e.g., veículo do TC-FUNC-005)."
+      ],
+      "dados_teste": {
+        "id_veiculo": "ID_VEICULO_VENDIDO"
+      },
+      "passos": [
+        "1. Logar como 'Vendedor'. Na tela de Lista de Veículos, localizar o veículo com status 'Vendido'.",
+        "2. Tentar clicar na opção 'Editar' e alterar algum dado (ex: preço, cor).",
+        "3. Tentar clicar na opção 'Remover' ou 'Mudar Status'."
+      ],
+      "resultado_esperado": "O sistema deve impedir qualquer edição ou remoção direta do veículo com status 'Vendido' e exibir uma mensagem informando que o status não permite essas ações ou que um processo de devolução é necessário.",
+      "criterios_aceitacao": [
+        "Edição e remoção direta de veículo 'Vendido' são impedidas.",
+        "Mensagem de erro informativa é exibida."
+      ],
+      "pos_condicoes": "Veículo permanece com status 'Vendido' e dados inalterados."
+    },
+    {
+      "id": "TC-NEG-006",
+      "titulo": "Acesso de Vendedor a Funcionalidades Exclusivas de Administrador",
+      "categoria": "RegraNegocio",
+      "prioridade": "Crítica",
+      "tecnica_teste": "Teste de Permissão",
+      "descricao": "Verificar se o controle de acesso por papel impede que um Vendedor acesse ou execute funcionalidades restritas ao Administrador (e.g., gerenciar usuários, configurar regras de negócio).",
+      "pre_condicoes": [
+        "Usuário 'Vendedor' logado no sistema."
+      ],
+      "dados_teste": {},
+      "passos": [
+        "1. Logar como 'Vendedor'.",
+        "2. Tentar navegar para a seção 'Gerenciamento de Usuários e Permissões'.",
+        "3. Tentar navegar para a seção 'Configurações de Regras de Negócio' (ex: margem mínima, limite de desconto).",
+        "4. Se as opções de menu forem visíveis, tentar acessá-las e executar uma ação (ex: alterar permissão de outro usuário)."
+      ],
+      "resultado_esperado": "O sistema deve negar o acesso às funcionalidades exclusivas do Administrador, exibindo uma mensagem de 'Acesso Negado' ou simplesmente não exibindo essas opções no menu para o Vendedor.",
+      "criterios_aceitacao": [
+        "Vendedor não consegue acessar ou executar ações em funcionalidades exclusivas do Administrador.",
+        "Mensagem de 'Acesso Negado' ou ocultação de funcionalidades é observada."
+      ],
+      "pos_condicoes": "Integridade das permissões de usuário mantida."
+    }
+  ],
+  "cenarios_borda": [
+    {
+      "id": "TC-BORDA-001",
+      "titulo": "Avaliação de Veículo com Exatamente 8 Fotos",
+      "categoria": "RegraNegocio",
+      "prioridade": "Média",
+      "tecnica_teste": "Análise de Valores Limite",
+      "descricao": "Verificar se a avaliação de um veículo usado pode ser concluída com sucesso quando o número exato de fotos é 8, conforme a regra de negócio.",
+      "pre_condicoes": [
+        "Usuário 'Avaliador' logado.",
+        "Um veículo usado cadastrado com status 'Aguardando Avaliação' e avaliação iniciada."
+      ],
+      "dados_teste": {
+        "id_veiculo": "ID_VEICULO_USADO_AVALIACAO_INICIADA",
+        "fotos_avaliacao": "8 fotos válidas",
+        "condicoes_veiculo": "Bom estado",
+        "preco_sugerido_compra": "40000.00"
+      },
+      "passos": [
+        "1. Logar como 'Avaliador'. Acessar a tela de Avaliação para o veículo de teste.",
+        "2. Realizar o upload de exatamente 8 fotos do veículo.",
+        "3. Preencher os demais campos da avaliação.",
+        "4. Clicar em 'Finalizar Avaliação'."
+      ],
+      "resultado_esperado": "A avaliação deve ser concluída com sucesso, e o veículo deve progredir para a próxima etapa do fluxo de compra (aprovação do Administrador).",
+      "criterios_aceitacao": [
+        "Avaliação finalizada com sucesso.",
+        "Status do veículo atualizado corretamente."
+      ],
+      "pos_condicoes": "Avaliação concluída e veículo aguardando aprovação."
+    },
+    {
+      "id": "TC-BORDA-002",
+      "titulo": "Proposta de Venda com Desconto Exatamente no Limite do Vendedor",
+      "categoria": "RegraNegocio",
+      "prioridade": "Alta",
+      "tecnica_teste": "Análise de Valores Limite",
+      "descricao": "Verificar se uma proposta de venda com um desconto exatamente igual ao limite do Vendedor pode ser finalizada sem a necessidade de aprovação do Administrador.",
+      "pre_condicoes": [
+        "Usuário 'Vendedor' e 'Financeiro' logados.",
+        "Um veículo 'Disponível' e um cliente cadastrado.",
+        "Limite de desconto do Vendedor configurado (ex: R$ 1000,00)."
+      ],
+      "dados_teste": {
+        "id_veiculo": "ID_VEICULO_DISPONIVEL",
+        "id_cliente": "ID_CLIENTE_EXISTENTE",
+        "desconto_aplicado": "1000.00"
+      },
+      "passos": [
+        "1. Logar como 'Vendedor'. Criar uma Proposta de Venda para o veículo e cliente de teste.",
+        "2. Aplicar um desconto de exatamente R$ 1000,00 (igual ao limite do Vendedor).",
+        "3. Clicar em 'Gerar Proposta' e 'Gerar Contrato'.",
+        "4. Logar como 'Financeiro' e registrar o pagamento para finalizar a venda."
+      ],
+      "resultado_esperado": "A proposta e a venda devem ser finalizadas com sucesso sem a necessidade de aprovação do Administrador. O status do veículo deve ser alterado para 'Vendido'.",
+      "criterios_aceitacao": [
+        "Venda concluída sem aprovação do Administrador.",
+        "Status do veículo alterado para 'Vendido'."
+      ],
+      "pos_condicoes": "Veículo vendido e registro da transação completa."
+    },
+    {
+      "id": "TC-BORDA-003",
+      "titulo": "Proposta de Venda Expira Exatamente Após 24 Horas",
+      "categoria": "RegraNegocio",
+      "prioridade": "Média",
+      "tecnica_teste": "Teste de Tempo",
+      "descricao": "Verificar se uma proposta de venda muda seu status para 'Expirada' exatamente 24 horas após sua criação, conforme a regra configurável.",
+      "pre_condicoes": [
+        "Usuário 'Vendedor' logado.",
+        "Um veículo 'Disponível' e um cliente cadastrado.",
+        "Configuração de expiração de proposta definida para 24 horas."
+      ],
+      "dados_teste": {
+        "id_veiculo": "ID_VEICULO_DISPONIVEL",
+        "id_cliente": "ID_CLIENTE_EXISTENTE",
+        "desconto_aplicado": "0.00",
+        "tempo_expiracao": "24h"
+      },
+      "passos": [
+        "1. Logar como 'Vendedor'. Criar uma Proposta de Venda (sem finalizá-la).",
+        "2. Registrar o timestamp de criação da proposta.",
+        "3. Aguardar exatamente 24 horas a partir do timestamp de criação (ou simular passagem do tempo no ambiente de teste).",
+        "4. Acessar a tela de 'Propostas' e verificar o status da proposta criada."
+      ],
+      "resultado_esperado": "A proposta de venda deve ter seu status alterado automaticamente para 'Expirada' exatamente após as 24 horas configuradas.",
+      "criterios_aceitacao": [
+        "Status da proposta alterado para 'Expirada' no tempo correto.",
+        "Proposta não é mais editável ou finalizável."
+      ],
+      "pos_condicoes": "Proposta com status 'Expirada' no sistema."
+    }
+  ],
+  "cenarios_seguranca": [
+    {
+      "id": "TC-SEG-001",
+      "titulo": "Verificar Controle de Acesso por Papel (Avaliador)",
+      "categoria": "RegraNegocio",
+      "prioridade": "Alta",
+      "tecnica_teste": "Teste de Permissão",
+      "descricao": "Verificar se o Avaliador pode realizar apenas suas funções específicas (inspeção e registro de dados de avaliação) e não acessar funcionalidades de outros papéis (ex: Financeiro, Administrador).",
+      "pre_condicoes": [
+        "Usuário 'Avaliador' logado no sistema."
+      ],
+      "dados_teste": {},
+      "passos": [
+        "1. Logar como 'Avaliador'.",
+        "2. Tentar acessar a tela 'Gestão de Usuários' (Admin).",
+        "3. Tentar acessar a tela 'Controle de Pagamentos' (Financeiro).",
+        "4. Tentar alterar 'Margem Mínima' nas configurações (Admin).",
+        "5. Acessar a tela de 'Avaliação de Veículos' e tentar concluir uma avaliação."
+      ],
+      "resultado_esperado": "O Avaliador deve ser impedido de acessar funcionalidades de outros papéis e conseguir executar suas funções de avaliação normalmente. Mensagens de 'Acesso Negado' devem ser exibidas.",
+      "criterios_aceitacao": [
+        "Acesso negado a funcionalidades de outros papéis.",
+        "Funcionalidades de Avaliador operam corretamente.",
+        "Registro de tentativa de acesso indevido (se houver logs)."
+      ],
+      "pos_condicoes": "Sistema mantém integridade de permissões."
+    },
+    {
+      "id": "TC-SEG-002",
+      "titulo": "Registro de Logs para Alterações de Preço de Veículo",
+      "categoria": "RegraNegocio",
+      "prioridade": "Alta",
+      "tecnica_teste": "Teste de Auditoria",
+      "descricao": "Verificar se todas as alterações no preço de venda ou compra de um veículo são registradas em um log de auditoria, incluindo usuário, data/hora e valores antigos/novos.",
+      "pre_condicoes": [
+        "Usuário 'Administrador' ou 'Vendedor' logado.",
+        "Acesso ao log de auditoria do sistema."
+      ],
+      "dados_teste": {
+        "id_veiculo": "ID_VEICULO_EXISTENTE",
+        "preco_original": "95000.00",
+        "novo_preco": "92000.00",
+        "usuario_alteracao": "Administrador_QA"
+      },
+      "passos": [
+        "1. Logar como 'Administrador'. Localizar e editar um veículo.",
+        "2. Alterar o 'Preço de Venda' de 95000.00 para 92000.00 e salvar.",
+        "3. Acessar o módulo de 'Logs de Auditoria' (se disponível) ou o banco de dados diretamente.",
+        "4. Buscar por entradas relacionadas ao ID do veículo ou ao usuário 'Administrador_QA'."
+      ],
+      "resultado_esperado": "Deve existir um registro de log detalhado para a alteração de preço, contendo o ID do veículo, usuário que realizou a alteração, timestamp, valor antigo e valor novo.",
+      "criterios_aceitacao": [
+        "Log de alteração de preço registrado com sucesso.",
+        "Log contém todos os dados obrigatórios (usuário, data/hora, valor_antigo, valor_novo)."
+      ],
+      "pos_condicoes": "Log de auditoria atualizado."
+    },
+    {
+      "id": "TC-SEG-003",
+      "titulo": "Registro de Logs para Geração de Contratos",
+      "categoria": "RegraNegocio",
+      "prioridade": "Média",
+      "tecnica_teste": "Teste de Auditoria",
+      "descricao": "Verificar se a geração de qualquer contrato (compra ou venda) é devidamente registrada em um log de auditoria.",
+      "pre_condicoes": [
+        "Usuário 'Vendedor' ou 'Administrador' logado.",
+        "Acesso ao log de auditoria do sistema."
+      ],
+      "dados_teste": {
+        "id_proposta": "ID_PROPOSTA_FINALIZADA",
+        "tipo_contrato": "Venda",
+        "usuario_gerador": "Vendedor_QA"
+      },
+      "passos": [
+        "1. Logar como 'Vendedor'. Completar o fluxo de venda até a etapa de 'Gerar Contrato'.",
+        "2. Clicar em 'Gerar Contrato' para uma proposta aprovada.",
+        "3. Acessar o módulo de 'Logs de Auditoria' (se disponível) ou o banco de dados diretamente.",
+        "4. Buscar por entradas relacionadas à geração de contratos ou ao usuário 'Vendedor_QA'."
+      ],
+      "resultado_esperado": "Deve existir um registro de log detalhado para a geração do contrato, contendo o ID do contrato (ou proposta), tipo de contrato, usuário que o gerou e timestamp.",
+      "criterios_aceitacao": [
+        "Log de geração de contrato registrado com sucesso.",
+        "Log contém dados como ID do contrato, tipo, usuário e timestamp."
+      ],
+      "pos_condicoes": "Log de auditoria atualizado com informações do contrato."
+    }
+  ],
+  "cenario_performance": [
+    {
+      "id": "TC-PERF-001",
+      "titulo": "Tempo de Resposta da Tela de Lista de Veículos com Filtros",
+      "categoria": "Fluxo",
+      "prioridade": "Crítica",
+      "tecnica_teste": "Teste de Tempo de Resposta",
+      "descricao": "Medir o tempo de resposta da tela de 'Lista de Veículos' ao aplicar filtros em um cenário com grande volume de dados, garantindo que seja inferior a 2 segundos.",
+      "pre_condicoes": [
+        "Usuário 'Vendedor' logado.",
+        "Banco de dados populado com um grande volume de veículos (ex: 10.000+ veículos).",
+        "Ferramenta de medição de performance configurada."
+      ],
+      "dados_teste": {
+        "filtro_marca": "Volkswagen",
+        "filtro_status": "Disponível",
+        "volume_dados_estoque": "15000 veículos"
+      },
+      "passos": [
+        "1. Acessar a tela 'Lista de Veículos'.",
+        "2. Iniciar a medição de tempo de resposta.",
+        "3. Aplicar filtros combinados (Marca, Status, etc.).",
+        "4. Clicar em 'Aplicar Filtros' e esperar a lista ser carregada.",
+        "5. Parar a medição de tempo de resposta."
+      ],
+      "resultado_esperado": "O tempo total para carregar a lista de veículos filtrada deve ser inferior a 2 segundos.",
+      "criterios_aceitacao": [
+        "Tempo de resposta da tela de filtro < 2 segundos."
+      ],
+      "pos_condicoes": ""
+    },
+    {
+      "id": "TC-PERF-002",
+      "titulo": "Teste de Carga para 200 Usuários Simultâneos na Criação de Propostas",
+      "categoria": "Fluxo",
+      "prioridade": "Crítica",
+      "tecnica_teste": "Teste de Carga",
+      "descricao": "Avaliar a estabilidade e performance do sistema ao suportar 200 usuários 'Vendedores' simultâneos realizando a criação de propostas de venda.",
+      "pre_condicoes": [
+        "Ambiente de teste com dados suficientes (clientes, veículos disponíveis).",
+        "Ferramenta de teste de carga configurada para simular 200 usuários virtuais 'Vendedores'.",
+        "Cenário de teste de carga que simula o fluxo de 'Criação de Proposta de Venda'."
+      ],
+      "dados_teste": {
+        "numero_usuarios_simultaneos": 200,
+        "fluxo_simulado": "Criação de Proposta de Venda",
+        "duracao_teste": "30 minutos"
+      },
+      "passos": [
+        "1. Iniciar o teste de carga com 200 usuários simultâneos executando o fluxo de 'Criação de Proposta de Venda'.",
+        "2. Monitorar o tempo de resposta médio para cada transação.",
+        "3. Monitorar o consumo de recursos do servidor (CPU, Memória, I/O de Banco de Dados).",
+        "4. Observar a taxa de erros durante a execução do teste."
+      ],
+      "resultado_esperado": "O sistema deve manter um tempo de resposta aceitável (inferior a 2 segundos para a maioria das requisições) e uma taxa de erro próxima de zero, sem degradação significativa de performance ou falhas, ao longo da duração do teste.",
+      "criterios_aceitacao": [
+        "Tempo de resposta médio das transações < 2 segundos.",
+        "Taxa de erros < 1%.",
+        "Recursos do servidor em limites aceitáveis (ex: CPU < 80%)."
+      ],
+      "pos_condicoes": "Sistema avaliado quanto à sua capacidade de carga."
+    }
+  ],
+  "bugs_provaveis": [
+    "Falha na validação de campos obrigatórios no cadastro de veículos ou clientes (ex: permitir CPF inválido, chassi duplicado).",
+    "Cálculo incorreto da margem de lucro na avaliação, permitindo aprovação de compras que violam a margem mínima.",
+    "Status do veículo não é atualizado corretamente após vendas, devoluções ou avaliações (ex: veículo vendido ainda aparece como disponível).",
+    "Problemas no upload, armazenamento ou exibição de fotos na avaliação de veículos (ex: limite de tamanho, formatos inválidos).",
+    "Relatórios (vendas, estoque, margem) exibem dados inconsistentes, incompletos ou incorretos em relação aos registros transacionais.",
+    "Permissões de usuário não respeitadas, permitindo acesso indevido a funcionalidades ou dados restritos (ex: Vendedor alterando configurações de sistema).",
+    "Propostas de venda não expiram automaticamente após o tempo configurado, permitindo que vendas sejam realizadas com propostas antigas.",
+    "Problemas na geração automática de contratos e recibos (ex: dados incorretos no documento, falha na impressão/download).",
+    "Filtros de pesquisa na lista de veículos não funcionam como esperado ou causam lentidão em grandes volumes de dados."
+  ],
+  "matriz_rastreabilidade": [
+    {
+      "requisito_id": "RF 3.1 - Cadastrar veículo (novo)",
+      "casos_teste_ids": ["TC-FUNC-001"]
+    },
+    {
+      "requisito_id": "RF 3.1 - Cadastrar veículo (usado)",
+      "casos_teste_ids": ["TC-FUNC-002", "TC-NEG-001"]
+    },
+    {
+      "requisito_id": "RF 3.1 - Editar dados do veículo",
+      "casos_teste_ids": ["TC-FUNC-003", "TC-NEG-005"]
+    },
+    {
+      "requisito_id": "RF 3.1 - Visualizar estoque com filtros",
+      "casos_teste_ids": ["TC-FUNC-009", "TC-PERF-001"]
+    },
+    {
+      "requisito_id": "RF 3.2 - Fluxo de Compra (Veículos Usados)",
+      "casos_teste_ids": ["TC-FUNC-004", "TC-NEG-001", "TC-NEG-003"]
+    },
+    {
+      "requisito_id": "RN 3.2 - Avaliação deve incluir no mínimo 8 fotos",
+      "casos_teste_ids": ["TC-NEG-002", "TC-BORDA-001"]
+    },
+    {
+      "requisito_id": "RN 3.2 - Preço de compra deve ser <= valor de venda * margem mínima configurável",
+      "casos_teste_ids": ["TC-NEG-003"]
+    },
+    {
+      "requisito_id": "RF 3.3 - Fluxo de Venda (Veículos Novos e Usados)",
+      "casos_teste_ids": ["TC-FUNC-005", "TC-FUNC-006"]
+    },
+    {
+      "requisito_id": "RN 3.3 - Se desconto > limite do vendedor, solicitação vai ao Administrador",
+      "casos_teste_ids": ["TC-FUNC-006", "TC-NEG-004", "TC-BORDA-002"]
+    },
+    {
+      "requisito_id": "RN 3.3 - Propostas expiram em 24h (configurável)",
+      "casos_teste_ids": ["TC-BORDA-003"]
+    },
+    {
+      "requisito_id": "RF 3.4 - Cadastrar novos clientes",
+      "casos_teste_ids": ["TC-FUNC-007"]
+    },
+    {
+      "requisito_id": "RF 3.4 - Consultar histórico de compras",
+      "casos_teste_ids": ["TC-FUNC-008"]
+    },
+    {
+      "requisito_id": "RF 3.5 - Relatório de vendas por período",
+      "casos_teste_ids": ["TC-FUNC-010"]
+    },
+    {
+      "requisito_id": "RN 5.1 - Resposta das telas deve ser inferior a 2s",
+      "casos_teste_ids": ["TC-PERF-001"]
+    },
+    {
+      "requisito_id": "RN 5.1 - Suportar até 200 usuários simultâneos",
+      "casos_teste_ids": ["TC-PERF-002"]
+    },
+    {
+      "requisito_id": "RN 5.2 - Controle de acesso por papel",
+      "casos_teste_ids": ["TC-NEG-006", "TC-SEG-001"]
+    },
+    {
+      "requisito_id": "RN 5.2 - Logs de todas as alterações de preço e contratos",
+      "casos_teste_ids": ["TC-SEG-002", "TC-SEG-003"]
+    }
+  ],
+  "metricas_qualidade": {
+    "cobertura_requisitos": "Parcial, focada nos requisitos funcionais e não-funcionais chave (ver Matriz de Rastreabilidade).",
+    "total_casos_teste": 24,
+    "distribuicao_por_categoria": {
+      "CRUD": 4,
+      "Fluxo": 6,
+      "RegraNegocio": 11,
+      "Integracao": 0,
+      "Performance": 2,
+      "Segurança": 3
+    }
+  }
+}

@@ -1,34 +1,54 @@
+# generator.py  -- Versão revisada completa
+# Referência do arquivo original enviado pelo usuário: :contentReference[oaicite:1]{index=1}
+
+import os
+import sys
 import json
 import re
+import datetime
 import docx
 from google import genai
-from docx.shared import Pt
-from docx.oxml import OxmlElement
-from docx.oxml.ns import qn
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 # ======================
-#  CONFIGURAÇÃO GERAL
+# CONFIGURAÇÃO
 # ======================
 
-API_KEY = "AIzaSyD8Pkkj62UhJgC8r8rzoE2NF3eV2CYyNZY"  # <<< COLOQUE SUA CHAVE AQUI
+API_KEY = "API_KEY"
 client = genai.Client(api_key=API_KEY)
 
-REQUISITOS_DOCX = "requisitos.docx"
-SAIDA_JSON = "saida.json"
-TESTES_JSON = "testes.json"
-WORD_OUTPUT = "cenarios_de_testes.docx"
+PASTA_DOCS = "Documentações"
+EXCEL_OUTPUT = "cenarios_de_teste.xlsx"
+DEBUG = False
+PROMPT_MAX_CHARS = 15000
 
-print("🚀 Gerador de cenários de testes iniciado.")
+# Lista completa de categorias conforme prompt atualizado
+TODAS_AS_LISTAS = [
+    "cenarios_funcionais",
+    "cenarios_negativos",
+    "cenarios_borda",
+    "cenarios_integracao",
+    "cenarios_usabilidade",
+    "cenarios_carga",
+    "cenarios_estresse",
+    "cenarios_aceitacao",
+    "cenarios_smoke",
+    "cenarios_exploratorios",
+    "cenarios_compatibilidade",
+    "cenarios_recuperacao",
+    "cenarios_seguranca"
+]
+
+print("🚀 TestForge (revisado) iniciado.")
 
 # =============================================
-#  1. EXTRAÇÃO DO .DOCX → JSON DE REQUISITOS
+# 1) EXTRAÇÃO DOS REQUISITOS DE UM DOCX
 # =============================================
 
-def extrair_requisitos_docx(caminho=REQUISITOS_DOCX):
-    print("📄 Extraindo requisitos do DOCX")
-
+def extrair_requisitos_docx(caminho):
+    """Extrai seções do docx (títulos em negrito são seções)."""
     doc = docx.Document(caminho)
-
     sections = []
     sec_atual = {"title": "", "requirements": []}
 
@@ -37,7 +57,7 @@ def extrair_requisitos_docx(caminho=REQUISITOS_DOCX):
         if not texto:
             continue
 
-        # Títulos são negrito
+        # Títulos detectados por runs em negrito
         if para.runs and any(r.bold for r in para.runs):
             if sec_atual["title"]:
                 sections.append(sec_atual)
@@ -45,263 +65,432 @@ def extrair_requisitos_docx(caminho=REQUISITOS_DOCX):
         else:
             sec_atual["requirements"].append({"text": texto})
 
+    # adicionar última seção
     if sec_atual["title"]:
         sections.append(sec_atual)
-
-    # salvar JSON
-    with open(SAIDA_JSON, "w", encoding="utf-8") as f:
-        json.dump({"sections": sections}, f, ensure_ascii=False, indent=2)
-
-    print("✅ Requisitos extraídos e salvos em no arquivo 'saida.json'")
 
     return sections
 
 # =================================================================================================
-#  2. PROMP PARA GERAÇÃO DOS CENÁRIOS (PODE SER AJUSTADO E MELHORADO CONFORME A SUA NECESSIDADE)
+# 2) PROMPT OTIMIZADO PARA O GEMINI (mantém campos do prompt real)
 # =================================================================================================
 
 QA_PROMPT = """
-Você é um Engenheiro de QA Sênior com 15+ anos de experiência em testes manuais, automatizados, análise de requisitos, modelagem de cenários e testes baseados em risco.  
-Sua missão é gerar uma suíte de testes **completa, técnica, rastreável e pronta para execução**, baseada exclusivamente nos requisitos fornecidos.
+Você é um Engenheiro de QA Sênior e Especialista em Automação com 15+ anos de experiência.
 
-# 🎯 OBJETIVO
-Produzir uma suíte de testes completa, robusta e tecnicamente abrangente, contemplando cenários funcionais positivos, negativos, casos de exceção, limites mínimos e máximos de entrada (tamanho, tipo, caracteres especiais, números), além de validações de segurança e performance. O objetivo final é garantir cobertura total dos requisitos, detecção antecipada de falhas ocultas e zero ambiguidade em cada cenário descrito.
+Sua missão: Analisar a funcionalidade e gerar testes completos + análise preditiva de bugs.
 
-# 🔎 METODOLOGIA
+NÃO produza explicações fora do JSON. Apenas JSON válido em português (PT-BR).
 
-## 1. ANÁLISE ESTRUTURAL
-Extraia de forma explícita:
-- Entidades principais, atributos e relacionamentos
-- Regras de negócio essenciais e condicionais
-- Fluxos primários, alternativos e exceções
-- Dependências externas e integrações
-- Riscos técnicos, funcionais e de usabilidade
-
-## 2. TÉCNICAS DE TESTE OBRIGATÓRIAS
-Utilize e informe quais técnicas sustentam cada cenário:
-- Particionamento de Equivalência
-- Análise de Valor Limite
-- Tabela de Decisão
-- Testes Baseados em Estado
-- Testes Exploratórios e Heurísticas (SFDPOT, HICCUPPS)
-- Análise de Risco
-
-## 3. COBERTURA MÍNIMA NECESSÁRIA
-Cada suíte deve contemplar:
-- Happy path completo
-- Validações de dados (tipo, formato, tamanho, regex, range)
-- Permissões, níveis de acesso e autenticação
-- Comportamentos inesperados, erros e exceções
-- Performance (SLAs definidos ou padrão: < 2s para 95% das requisições)
-- Segurança (OWASP Top 10 + autenticação/autorizações incorretas)
-- Compatibilidade cross-browser e cross-device
-- Persistência e integridade de dados
-- Cenários assíncronos e concorrência (quando aplicável)
-
-# 📦 FORMATO DE ENTREGA
-Retorne **somente JSON válido**, sem markdown, sem textos extras.
-
-Estrutura padrão obrigatória:
-
+ESTRUTURA DO JSON FINAL (mantenha todas as chaves mesmo que vazias):
 {
-  "analise_requisitos": {
-    "entidades": [],
-    "atributos_criticos": [],
-    "regras_negocio": [],
-    "fluxos": {
-      "principal": [],
-      "alternativos": [],
-      "excecoes": []
+  "meta_info": {
+    "funcionalidade_alvo": "",
+    "data_geracao": "",
+    "complexidade_percebida": ""
+  },
+  "analise_preditiva_bugs": {
+    "estimativa_total_bugs_esperados": "",
+    "densidade_deifeitos_por_area": {
+       "funcional": "",
+       "seguranca": "",
+       "usabilidade": "",
+       "integracao": ""
     },
-    "integracoes": [],
-    "riscos": []
+    "top_3_areas_risco_critico": [],
+    "justificativa_analise": ""
+  },
+  "analise_requisitos": {
+    "riscos_identificados": [],
+    "suposicoes": []
   },
 
-  "cenarios_funcionais": [
-    {
-      "id": "TC-FUNC-001",
-      "titulo": "",
-      "categoria": "CRUD|Fluxo|RegraNegocio|Integracao",
-      "prioridade": "Crítica|Alta|Média|Baixa",
-      "tecnica_teste": "",
-      "descricao": "",
-      "pre_condicoes": [],
-      "dados_teste": {},
-      "passos": [],
-      "resultado_esperado": "",
-      "criterios_aceitacao": [],
-      "pos_condicoes": ""
-    }
-  ],
-
+  "cenarios_funcionais": [],
   "cenarios_negativos": [],
   "cenarios_borda": [],
+  "cenarios_integracao": [],
+  "cenarios_usabilidade": [],
+  "cenarios_carga": [],
+  "cenarios_estresse": [],
+  "cenarios_aceitacao": [],
+  "cenarios_smoke": [],
+  "cenarios_exploratorios": [],
+  "cenarios_compatibilidade": [],
+  "cenarios_recuperacao": [],
   "cenarios_seguranca": [],
-  "cenario_performance": [],
-  "bugs_provaveis": [],
-  "matriz_rastreabilidade": [],
+
   "metricas_qualidade": {
-    "cobertura_requisitos": "",
-    "total_casos_teste": 0,
-    "distribuicao_por_categoria": {}
+      "cobertura_caminhos_logicos": "",
+      "prioridade_automacao": ""
   }
 }
 
-# ⚠️ REGRAS CRÍTICAS E INEGOCIÁVEIS
+REGRAS:
+- Se uma categoria não for aplicável, retorne [].
+- JSON deve ser 100% válido e sem texto fora do bloco JSON.
+"""
 
-1. IDs devem seguir: TC-{CATEGORIA}-{NNN}
-2. Nenhum passo pode ser vago — todos devem ser acionáveis
-3. Resultados devem ser 100% mensuráveis e verificáveis
-4. Testes devem considerar condições de concorrência sempre que possível
-5. Nunca incluir textos fora do JSON, nem comentários
-6. Nada de vírgulas sobrando (JSON deve ser validado mentalmente por um ninja)
-7. Sempre mapear pelo menos 1 bug provável por regra de negócio
-
-# 🏆 EXEMPLO DO QUE ESPERO
-❌ Vago: "Testar login"
-✅ Robusto: "Login com credenciais válidas deve retornar token JWT, registrar timestamp do login e responder em < 2s"
-
-Retorne APENAS o JSON, sem texto adicional."""
-
-def build_prompt():
-    print("🧩 Pensando para criar os melhores cenários")
-
-    with open(SAIDA_JSON, "r", encoding="utf-8") as f:
-        requisitos = json.load(f)
-
+def build_prompt(sections, nome_funcionalidade=None):
+    """Cria o prompt a enviar ao modelo."""
     combined = ""
-    for section in requisitos["sections"]:
+    for section in sections:
         combined += f"\nSEÇÃO: {section['title']}\n"
         for req in section["requirements"]:
-            combined += f"- {req['text']}\n"
+            linha = req["text"].strip().replace("\n", " ")
+            combined += f"- {linha}\n"
 
-    return QA_PROMPT + "\n\nREQUISITOS ANALISADOS:\n" + combined
+    if nome_funcionalidade:
+        header = f"FUNCIONALIDADE_ALVO: {nome_funcionalidade}\n"
+    else:
+        header = ""
+
+    payload = QA_PROMPT + "\n\n" + header + "\nREQUISITOS_ANALISADOS:\n" + combined
+    # garantir limite
+    if len(payload) > PROMPT_MAX_CHARS:
+        print("⚠️ Requisitos muito longos — compactando para evitar corte do modelo...")
+        payload = payload[:PROMPT_MAX_CHARS]
+        payload = payload.rsplit("\n", 1)[0] + "\n... (conteúdo reduzido automaticamente)"
+    return payload
 
 # ==================================
-#  3. LIMPAR JSON VINDO DO GEMINI
+# 3) SANITIZADOR DE JSON (robusto)
 # ==================================
 
 def limpar_json_bruto(texto):
-    try:
-        match = re.search(r'\{.*\}', texto, re.DOTALL)
-        return match.group(0) if match else texto
-    except:
+    """
+    Extrai o primeiro JSON balanceado da saída do modelo.
+    Estratégia: encontra primeiro '{' e fecha contando profundidade, respeitando strings e escapes.
+    """
+    if not texto or "{" not in texto:
         return texto
 
+    start = texto.find("{")
+    depth = 0
+    in_string = False
+    escape = False
+
+    for i in range(start, len(texto)):
+        ch = texto[i]
+        if ch == '"' and not escape:
+            in_string = not in_string
+        if ch == "\\" and not escape:
+            escape = True
+            continue
+        else:
+            escape = False
+
+        if not in_string:
+            if ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    return texto[start:i+1]
+
+    # fallback: de primeiro { até último }
+    end = texto.rfind("}")
+    if end != -1 and start < end:
+        return texto[start:end+1]
+
+    return texto
+
 # ====================
-#  4. CHAMAR GEMINI
+# 4) CHAMADA AO MODELO
 # ====================
 
 def gerar_cenarios(prompt):
-    print("🤖 Gemini está Processando as informações.")
-    resp = client.models.generate_content(
-        model="models/gemini-2.5-flash", #caso queira utilizar outro modelo do gemini basta trocar por outro. Ex: "gemini-2.0-flash-lite"
-        contents=prompt
-    )
-    return resp.text
+    """Chama o Gemini de forma segura; retorna texto bruto."""
+    try:
+        resp = client.models.generate_content(
+            model="models/gemini-2.5-flash",
+            contents=prompt
+        )
+        if DEBUG:
+            print("🔍 DEBUG - resposta bruta do Gemini:\n", resp.text)
+        return resp.text
+    except Exception as e:
+        print("❌ Erro ao chamar o modelo:", e)
+        return ""
 
-# ===========================================================================================
-#  5. FORMATAR CÉLULAS DO WORD (VERSÃO INICIAL DO TEMPLATE DO WORD AINDA PODE SER MELHORADO)
-# ===========================================================================================
+# =============================================
+# 5) NORMALIZAR E VALIDAR O JSON
+# =============================================
 
-def set_cell_bg(cell, color_hex):
-    tc = cell._tc
-    tcPr = tc.get_or_add_tcPr()
-    shd = OxmlElement("w:shd")
-    shd.set(qn("w:fill"), color_hex)
-    tcPr.append(shd)
+def validar_json(json_data):
+    """Garante que todas as categorias existam e tenham tipo correto."""
+    if not isinstance(json_data, dict):
+        json_data = {}
 
-def set_cell_borders(cell):
-    tc = cell._tc
-    tcPr = tc.get_or_add_tcPr()
-    borders = OxmlElement("w:tcBorders")
+    # garantir listas
+    for categoria in TODAS_AS_LISTAS:
+        if categoria not in json_data or not isinstance(json_data[categoria], list):
+            json_data[categoria] = []
 
-    for side in ["top", "left", "bottom", "right"]:
-        el = OxmlElement(f"w:{side}")
-        el.set(qn("w:val"), "single")
-        el.set(qn("w:sz"), "6")
-        el.set(qn("w:color"), "808080")
-        borders.append(el)
+    # garantir blocos meta/analise/metricas
+    if "meta_info" not in json_data or not isinstance(json_data["meta_info"], dict):
+        json_data["meta_info"] = {}
+    if "analise_preditiva_bugs" not in json_data or not isinstance(json_data["analise_preditiva_bugs"], dict):
+        json_data["analise_preditiva_bugs"] = {}
+    if "analise_requisitos" not in json_data or not isinstance(json_data["analise_requisitos"], dict):
+        json_data["analise_requisitos"] = {}
+    if "metricas_qualidade" not in json_data or not isinstance(json_data["metricas_qualidade"], dict):
+        json_data["metricas_qualidade"] = {}
 
-    tcPr.append(borders)
+    return json_data
 
-def style_header(cell):
-    set_cell_bg(cell, "D9D9D9")
-    set_cell_borders(cell)
-    for p in cell.paragraphs:
-        for run in p.runs:
-            run.font.bold = True
-            run.font.size = Pt(10)
+# =============================
+# 6) UTILITÁRIAS PARA COERÇÃO
+# =============================
 
-# =====================================================================
-#  6. GERAR TEMPLATE DO WORD PREENCHIDO COM DADOS ANALISADO PELO GEMINI
-# =====================================================================
+def safe_to_list(value):
+    """Garante que o valor seja uma lista de strings, mesmo que JSON venha inconsistente."""
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(v) for v in value]
+    # se for string, quebrar por linhas se houver; senão encapsular
+    if isinstance(value, str):
+        lines = [l.strip() for l in value.splitlines() if l.strip()]
+        return lines if lines else [value]
+    # objeto qualquer -> transformar em string única
+    return [str(value)]
 
-def salvar_word(json_data):
-    print("📝 Gerando seu plano de testes em Word")
+def safe_get(tc, key):
+    """Retorna campo coerente do cenário."""
+    return tc.get(key, "")
 
-    doc = docx.Document()
-    doc.add_heading("Cenários de Teste - IA Generator", level=1)
+# =============================================
+# 7) ESCREVER ABA DO EXCEL (meta + cenários unidos)
+# =============================================
 
-    def add_table(title, itens):
-        doc.add_heading(title, level=2)
-        table = doc.add_table(rows=1, cols=6)
-        hdr = table.rows[0].cells
+def escrever_aba(ws, json_data):
+    """
+    Escreve no worksheet:
+    - Cabeçalho com meta_info e analise_preditiva_bugs
+    - Tabela única contendo todos os cenários das categorias (com coluna Tipo de Cenário)
+    """
+    thin_border = Border(left=Side(style="thin"), right=Side(style="thin"),
+                         top=Side(style="thin"), bottom=Side(style="thin"))
+    bold = Font(bold=True)
+    header_fill = PatternFill(start_color="D9D9D9", fill_type="solid")
 
-        headers = ["ID", "Título", "Descrição", "Pré-condições", "Passos", "Resultado Esperado"]
+    # --- topo: meta_info e analise_preditiva_bugs ---
+    row = 1
+    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=7)
+    ws.cell(row=row, column=1, value="Meta Info & Análise Preditiva (gerado automaticamente)").font = Font(bold=True, size=12)
+    row += 1
 
-        for i, h in enumerate(headers):
-            hdr[i].text = h
-            style_header(hdr[i])
+    meta = json_data.get("meta_info", {})
+    ws.cell(row=row, column=1, value="Funcionalidade Alvo:")
+    ws.cell(row=row, column=2, value=meta.get("funcionalidade_alvo", ""))
+    row += 1
 
-        for item in itens:
-            row = table.add_row().cells
-            row[0].text = item.get("id", "")
-            row[1].text = item.get("titulo", "")
-            row[2].text = item.get("descricao", "")
-            row[3].text = "\n".join(item.get("pre_condicoes", []))
-            row[4].text = "\n".join(item.get("passos", []))
-            row[5].text = item.get("resultado_esperado", "")
+    ws.cell(row=row, column=1, value="Data Geração:")
+    ws.cell(row=row, column=2, value=meta.get("data_geracao", ""))
+    ws.cell(row=row, column=3, value="Complexidade Percebida:")
+    ws.cell(row=row, column=4, value=meta.get("complexidade_percebida", ""))
+    row += 1
 
-            for c in row:
-                set_cell_borders(c)
+    analise = json_data.get("analise_preditiva_bugs", {})
+    ws.cell(row=row, column=1, value="Estimativa total bugs esperados:")
+    ws.cell(row=row, column=2, value=analise.get("estimativa_total_bugs_esperados", ""))
+    row += 1
 
-        doc.add_paragraph("")
+    ws.cell(row=row, column=1, value="Top 3 áreas de maior risco:")
+    top3 = analise.get("top_3_areas_risco_critico", [])
+    ws.cell(row=row, column=2, value=", ".join(top3) if isinstance(top3, list) else str(top3))
+    row += 2
 
-    if "cenarios_funcionais" in json_data:
-        add_table("Cenários Funcionais", json_data["cenarios_funcionais"])
+    # --- cabeçalho da tabela de cenários ---
+    headers = ["ID", "Título", "Descrição", "Pré-condições", "Passos", "Resultado Esperado", "Tipo de Cenário"]
+    start_table_row = row
+    for c, h in enumerate(headers, start=1):
+        cell = ws.cell(row=row, column=c, value=h)
+        cell.font = bold
+        cell.fill = header_fill
+        cell.border = thin_border
+        cell.alignment = Alignment(wrap_text=True, vertical="top")
+    row += 1
 
-    if "cenarios_negativos" in json_data:
-        add_table("Cenários Negativos", json_data["cenarios_negativos"])
+    # --- juntar todas as categorias ---
+    total_inseridos = 0
+    for categoria in TODAS_AS_LISTAS:
+        itens = json_data.get(categoria, [])
+        if not isinstance(itens, list):
+            # tentar coerção
+            itens = [itens]
 
-    if "cenarios_borda" in json_data:
-        add_table("Cenários de Borda", json_data["cenarios_borda"])
+        for tc in itens:
+            # coerções seguras
+            id_ = safe_get(tc, "id") or safe_get(tc, "titulo")  # tenta algo decente se id ausente
+            titulo = safe_get(tc, "titulo")
+            descricao = safe_get(tc, "descricao")
+            pre = safe_to_list(tc.get("pre_condicao", tc.get("pre_condicoes", [])))
+            passos = safe_to_list(tc.get("passos", []))
+            dados_teste = safe_get(tc, "dados_teste")
+            resultado = safe_get(tc, "resultado_esperado")
 
-    doc.save(WORD_OUTPUT)
-    print(f"Seu documento foi gerado ✅. Confira o arquivo: '{WORD_OUTPUT}'")
+            # inserir linha
+            values = [
+                id_,
+                titulo,
+                descricao,
+                "\n".join(pre),
+                "\n".join(passos),
+                resultado,
+                categoria
+            ]
+            for c, val in enumerate(values, start=1):
+                cell = ws.cell(row=row, column=c, value=val)
+                cell.border = thin_border
+                cell.alignment = Alignment(wrap_text=True, vertical="top")
+            row += 1
+            total_inseridos += 1
+
+    # Ajuste colunas
+    col_widths = [15, 30, 55, 30, 45, 40, 25]
+    for i, width in enumerate(col_widths, start=1):
+        try:
+            ws.column_dimensions[chr(64 + i)].width = width
+        except Exception:
+            pass
+
+    # Congelar cabeçalho da tabela
+    # freeze_panes em Excel: célula logo abaixo do header da tabela
+    ws.freeze_panes = f"A{start_table_row + 1}"
+
+    return total_inseridos
 
 # ============================================================
-#  7. EXECUÇÃO PRINCIPAL
+# 8) PROCESSAR TODOS OS DOCX NA PASTA E GERAR EXCEL
 # ============================================================
+
+def sanitize_sheet_name(name, existing_names):
+    """Garante nome de aba válido (<=31 chars) e único."""
+    base = name[:31]
+    candidate = base
+    i = 1
+    while candidate in existing_names:
+        suffix = f"_{i}"
+        allowed = 31 - len(suffix)
+        candidate = base[:allowed] + suffix
+        i += 1
+    return candidate
 
 if __name__ == "__main__":
-    extrair_requisitos_docx()
 
-    prompt = build_prompt()
-    resposta = gerar_cenarios(prompt)
+    # checagens iniciais
+    if not os.path.exists(PASTA_DOCS):
+        print(f"❌ Pasta '{PASTA_DOCS}' não encontrada. Crie e coloque seus .docx lá.")
+        sys.exit(1)
 
-    resposta_limpa = limpar_json_bruto(resposta)
+    arquivos = [f for f in os.listdir(PASTA_DOCS) if f.lower().endswith(".docx")]
+    if not arquivos:
+        print("❌ Nenhum documento .docx encontrado na pasta Documentações.")
+        sys.exit(1)
 
-    with open(TESTES_JSON, "w", encoding="utf-8") as f:
-        f.write(resposta_limpa)
-
+    wb = Workbook()
+    # remover sheet default
     try:
-        json_data = json.loads(resposta_limpa)
-    except:
-        print("Gemini retornou um JSON inválido. Isso pode ser um erro :( ❌")
-        print("JSON bruto salvo em 'testes.json'")
-        exit()
+        wb.remove(wb.active)
+    except Exception:
+        pass
 
-    salvar_word(json_data)
+    existing_sheet_names = set()
+    summary_stats = {}
 
-    print("🎉 Plano de testes criado com sucesso!")
+    for arquivo in sorted(arquivos):
+        caminho = os.path.join(PASTA_DOCS, arquivo)
+        nome_base = os.path.splitext(arquivo)[0]
+        nome_aba = sanitize_sheet_name(nome_base, existing_sheet_names)
+        existing_sheet_names.add(nome_aba)
+
+        print(f"\n📄 Processando: {arquivo}")
+
+        # extrair requisitos
+        try:
+            sections = extrair_requisitos_docx(caminho)
+        except Exception as e:
+            print(f"❌ Erro ao ler '{arquivo}': {e}")
+            continue
+
+        # montar prompt (inclui nome do documento como funcionalidade alvo)
+        prompt = build_prompt(sections, nome_funcionalidade=nome_base)
+
+        # chamar modelo
+        resposta = gerar_cenarios(prompt)
+        if not resposta:
+            print("⚠️ Resposta vazia do modelo; pulando arquivo.")
+            continue
+
+        # salvar saída bruta para auditoria por arquivo
+        raw_out_path = f"raw_{nome_base}.txt"
+        try:
+            with open(raw_out_path, "w", encoding="utf-8") as f:
+                f.write(resposta)
+        except Exception:
+            pass
+
+        # sanitizar JSON
+        resposta_limpa = limpar_json_bruto(resposta)
+
+        # tentar carregar JSON
+        try:
+            json_data = json.loads(resposta_limpa)
+        except Exception as e:
+            print("⚠️ JSON inválido — tentando extrair novamente e recarregar. Erro:", e)
+            resposta_limpa2 = limpar_json_bruto(resposta_limpa)
+            try:
+                json_data = json.loads(resposta_limpa2)
+            except Exception as e2:
+                print("❌ Não foi possível interpretar JSON desse arquivo. Veja", raw_out_path)
+                if DEBUG:
+                    print("DEBUG - saída bruta:\n", resposta)
+                continue
+
+        # validar/normalizar
+        json_data = validar_json(json_data)
+
+        # preencher meta_info defaults se ausentes
+        meta = json_data.get("meta_info", {})
+        if "data_geracao" not in meta or not meta.get("data_geracao"):
+            meta["data_geracao"] = datetime.date.today().isoformat()
+        if "funcionalidade_alvo" not in meta or not meta.get("funcionalidade_alvo"):
+            meta["funcionalidade_alvo"] = nome_base
+        json_data["meta_info"] = meta
+
+        # criar aba e escrever
+        ws = wb.create_sheet(title=nome_aba)
+        try:
+            count = escrever_aba(ws, json_data)
+            summary_stats[nome_aba] = count
+            print(f"✅ Inseridos {count} cenários na aba '{nome_aba}'")
+        except Exception as e:
+            print(f"❌ Erro ao escrever aba '{nome_aba}': {e}")
+            continue
+
+    # adicionar aba de resumo (opcional) com contagem por documento
+    try:
+        ws_sum = wb.create_sheet(title="Resumo")
+        ws_sum["A1"] = "Resumo de cenários por documento"
+        ws_sum["A1"].font = Font(bold=True)
+        row = 3
+        ws_sum["A2"] = "Documento"
+        ws_sum["B2"] = "Total Cenários"
+        ws_sum["A2"].font = Font(bold=True)
+        ws_sum["B2"].font = Font(bold=True)
+
+        for nome, qtd in summary_stats.items():
+            ws_sum.cell(row=row, column=1, value=nome)
+            ws_sum.cell(row=row, column=2, value=qtd)
+            row += 1
+    except Exception:
+        pass
+
+    # salvar arquivo
+    try:
+        wb.save(EXCEL_OUTPUT)
+        print(f"\n🎉 Finalizado! Excel gerado: {EXCEL_OUTPUT}")
+    except Exception as e:
+        print("❌ Erro ao salvar Excel:", e)
+        sys.exit(1)

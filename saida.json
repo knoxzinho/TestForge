@@ -1,414 +1,666 @@
 {
   "sections": [
     {
-      "title": "Documentação Funcional — Sistema de Gestão para Mercadinho Local",
+      "title": "DOCUMENTAÇÃO FUNCIONAL – SISTEMA DE VENDA E COMPRA DE CARROS (NOVOS E USADOS)",
       "requirements": []
     },
     {
-      "title": "Versão: 1.0\nData: 23 de novembro de 2025\nAutor: OpenIA / Rian Santos",
+      "title": "1. Introdução",
       "requirements": []
     },
     {
-      "title": "1. Visão Geral",
-      "requirements": []
-    },
-    {
-      "title": "Este documento descreve as funcionalidades essenciais de um Sistema de Gestão para um Mercadinho Local, voltado para facilitar operações diárias como: controle de estoque, vendas, cadastro de clientes, compras com fornecedores, emissão de relatórios e fluxo financeiro simples. O sistema será multiplataforma (desktop ou web), leve e intuitivo.",
+      "title": "1.1 Objetivo do Sistema",
       "requirements": [
         {
-          "text": "O objetivo principal é otimizar processos internos e oferecer uma visão clara do desempenho do mercadinho."
+          "text": "O sistema tem como objetivo gerenciar todo o ciclo de compra e venda de veículos novos e usados, permitindo que concessionárias, vendedores e administradores controlem estoque, clientes, avaliações, propostas e transações de forma eficiente e centralizada."
         }
       ]
     },
     {
-      "title": "2. Escopo",
+      "title": "1.2 Público-Alvo",
+      "requirements": [
+        {
+          "text": "Equipe de vendas"
+        },
+        {
+          "text": "Administradores da concessionária"
+        },
+        {
+          "text": "Avaliadores de veículos usados"
+        },
+        {
+          "text": "Gestores financeiros"
+        },
+        {
+          "text": "Clientes (acesso opcional via portal)"
+        }
+      ]
+    },
+    {
+      "title": "1.3 Escopo",
+      "requirements": [
+        {
+          "text": "O sistema abrange:"
+        },
+        {
+          "text": "Cadastro e gestão de veículos"
+        },
+        {
+          "text": "Controle de estoque"
+        },
+        {
+          "text": "Registro de compra e venda"
+        },
+        {
+          "text": "Avaliação de carros usados"
+        },
+        {
+          "text": "Emissão de contratos e recibos"
+        },
+        {
+          "text": "Gestão de clientes"
+        },
+        {
+          "text": "Relatórios operacionais e financeiros"
+        }
+      ]
+    },
+    {
+      "title": "2. Papéis de Usuário",
       "requirements": []
     },
     {
-      "title": "2.1 Inclusões",
+      "title": "2.1 Administrador",
       "requirements": [
         {
-          "text": "Cadastro e gerenciamento de produtos."
+          "text": "Acesso total ao sistema"
         },
         {
-          "text": "Controle de estoque em tempo real."
+          "text": "Gerenciar usuários e permissões"
         },
         {
-          "text": "Registro de vendas (com e sem CPF)."
+          "text": "Configurar regras de negócio (ex: margem mínima, taxa de comissão)"
         },
         {
-          "text": "Sistema de caixa (PDV) simples e rápido."
-        },
-        {
-          "text": "Emissão de comprovantes (impressora térmica)."
-        },
-        {
-          "text": "Cadastro de fornecedores e controle de pedidos de compra."
-        },
-        {
-          "text": "Dashboard com indicadores."
-        },
-        {
-          "text": "Controle financeiro básico: entradas, saídas e fluxo de caixa."
-        },
-        {
-          "text": "Relatórios de vendas, estoque e compras."
-        },
-        {
-          "text": "Controle de usuários e permissões."
+          "text": "Visualizar todos os relatórios"
         }
       ]
     },
     {
-      "title": "2.2 Exclusões",
+      "title": "2.2 Vendedor",
       "requirements": [
         {
-          "text": "Integração com e-commerce."
+          "text": "Registrar propostas de compra e venda"
         },
         {
-          "text": "Sistema fiscal completo com emissão de NF-e (pode ser incluído depois)."
+          "text": "Consultar estoque"
         },
         {
-          "text": "Controle avançado de contabilidade."
+          "text": "Criar contratos"
         },
         {
-          "text": "Integração com sistemas de pagamento automático."
+          "text": "Cadastrar novos clientes"
         }
       ]
     },
     {
-      "title": "3. Atores",
+      "title": "2.3 Avaliador",
+      "requirements": [
+        {
+          "text": "Realizar inspeções de veículos"
+        },
+        {
+          "text": "Registrar preços sugeridos, fotos e estado do veículo"
+        }
+      ]
+    },
+    {
+      "title": "2.4 Financeiro",
+      "requirements": [
+        {
+          "text": "Controlar pagamentos"
+        },
+        {
+          "text": "Gerar notas fiscais"
+        },
+        {
+          "text": "Fechar vendas"
+        }
+      ]
+    },
+    {
+      "title": "3. Requisitos Funcionais",
       "requirements": []
     },
     {
-      "title": "Atendente/Caixa — realiza vendas, registra pagamentos.",
+      "title": "3.1 Cadastro e Consulta de Veículos",
       "requirements": []
     },
     {
-      "title": "Gerente/Administrador — gerencia estoque, produtos, fornecedores e relatórios.",
+      "title": "Funcionalidades:",
+      "requirements": [
+        {
+          "text": "Cadastrar veículo (novo ou usado)"
+        },
+        {
+          "text": "Editar dados do veículo"
+        },
+        {
+          "text": "Adicionar fotos"
+        },
+        {
+          "text": "Vincular estado de conservação (usados)"
+        },
+        {
+          "text": "Visualizar estoque com filtros"
+        }
+      ]
+    },
+    {
+      "title": "Campos obrigatórios:",
+      "requirements": [
+        {
+          "text": "Marca"
+        },
+        {
+          "text": "Modelo"
+        },
+        {
+          "text": "Ano/modelo"
+        },
+        {
+          "text": "Cor"
+        },
+        {
+          "text": "Tipo de combustível"
+        },
+        {
+          "text": "Quilometragem (somente usados)"
+        },
+        {
+          "text": "Preço de venda"
+        },
+        {
+          "text": "Chassi"
+        },
+        {
+          "text": "Status: Disponível, Em negociação, Vendido"
+        }
+      ]
+    },
+    {
+      "title": "Exemplos:",
+      "requirements": [
+        {
+          "text": "“Volkswagen Gol 1.6, 2018/2018, Flex, 62.000 km”"
+        },
+        {
+          "text": "“Hyundai HB20 0km, 2025, Branco, Gasolina”"
+        }
+      ]
+    },
+    {
+      "title": "3.2 Fluxo de Compra (Veículos Usados)",
       "requirements": []
     },
     {
-      "title": "Cliente — opcionalmente cadastrado (para fiado ou controle de consumo).",
+      "title": "Etapas:",
       "requirements": []
     },
     {
-      "title": "Fornecedor — fornece produtos para reposição.",
+      "title": "Cadastro inicial do veículo do cliente",
+      "requirements": [
+        {
+          "text": "Dados básicos fornecidos pelo proprietário."
+        }
+      ]
+    },
+    {
+      "title": "Avaliação",
+      "requirements": [
+        {
+          "text": "Avaliador insere fotos, condições e preço sugerido."
+        }
+      ]
+    },
+    {
+      "title": "Aprovação pelo Administrador",
+      "requirements": [
+        {
+          "text": "Pode ajustar o valor sugerido."
+        }
+      ]
+    },
+    {
+      "title": "Contrato de compra",
+      "requirements": [
+        {
+          "text": "Sistema gera documento com valor acordado."
+        }
+      ]
+    },
+    {
+      "title": "Entrada no estoque",
+      "requirements": [
+        {
+          "text": "Veículo passa a ter status: “Disponível para venda”."
+        }
+      ]
+    },
+    {
+      "title": "Regras:",
+      "requirements": [
+        {
+          "text": "Só é possível adicionar um usado ao estoque após avaliação."
+        },
+        {
+          "text": "Avaliação deve incluir no mínimo 8 fotos."
+        },
+        {
+          "text": "Preço de compra deve ser <= valor de venda * margem mínima configurável (ex: 20%)."
+        }
+      ]
+    },
+    {
+      "title": "3.3 Fluxo de Venda (Veículos Novos e Usados)",
       "requirements": []
     },
     {
-      "title": "4. Requisitos Funcionais",
+      "title": "Etapas:",
       "requirements": []
     },
     {
-      "title": "4.1 Cadastro de Produtos",
+      "title": "Cliente define interesse",
       "requirements": [
         {
-          "text": "RF01: Permitir cadastrar produtos com nome, código de barras, categoria, preço de venda, preço de custo, estoque inicial, unidade (kg, un, pacote)."
-        },
-        {
-          "text": "RF02: Permitir edição e desativação de produtos."
-        },
-        {
-          "text": "RF03: Suporte a itens fracionados (ex.: venda por kg ou gramas)."
-        },
-        {
-          "text": "RF04: Registrar data da última reposição."
+          "text": "Vendedor cria Proposta de Venda."
         }
       ]
     },
     {
-      "title": "4.2 Estoque",
+      "title": "Negociação",
       "requirements": [
         {
-          "text": "RF05: Atualizar estoque automaticamente após vendas."
-        },
-        {
-          "text": "RF06: Permitir entrada manual de estoque (compra, ajuste, inventário)."
-        },
-        {
-          "text": "RF07: Notificações de estoque baixo (nível mínimo configurável)."
-        },
-        {
-          "text": "RF08: Registro de inventário periódico."
+          "text": "Possibilidade de aplicar descontos dentro do limite liberado."
         }
       ]
     },
     {
-      "title": "4.3 Vendas / Caixa (PDV)",
+      "title": "Aprovação (quando necessário)",
       "requirements": [
         {
-          "text": "RF09: Registrar vendas com seleção de produtos via código, nome ou leitor de código de barras."
-        },
-        {
-          "text": "RF10: Permitir descontos por item ou por total (com permissões)."
-        },
-        {
-          "text": "RF11: Registrar forma de pagamento (dinheiro, cartão, Pix, misto)."
-        },
-        {
-          "text": "RF12: Permitir venda com CPF na nota (opcional)."
-        },
-        {
-          "text": "RF13: Imprimir comprovante em impressora térmica."
-        },
-        {
-          "text": "RF14: Abrir e fechar caixa diariamente com registro de valores."
-        },
-        {
-          "text": "RF15: Registrar cancelamento de item ou venda (com auditoria)."
-        },
-        {
-          "text": "RF16: Permitir venda fiado para clientes cadastrados."
+          "text": "Se desconto > limite do vendedor, solicitação vai ao Administrador."
         }
       ]
     },
     {
-      "title": "4.4 Cadastro de Clientes",
+      "title": "Contrato",
       "requirements": [
         {
-          "text": "RF17: Cadastrar nome, telefone, CPF, saldo de fiado e histórico."
-        },
-        {
-          "text": "RF18: Permitir consulta de dívidas e pagamentos."
-        },
-        {
-          "text": "RF19: Controlar limite de fiado."
+          "text": "Sistema gera contrato de venda automaticamente."
         }
       ]
     },
     {
-      "title": "4.5 Fornecedores e Compras",
+      "title": "Pagamento",
       "requirements": [
         {
-          "text": "RF20: Cadastro de fornecedores com dados básicos (CNPJ, telefone, endereço)."
-        },
-        {
-          "text": "RF21: Registrar pedidos de compra (itens, quantidade, valor)."
-        },
-        {
-          "text": "RF22: Atualizar estoque após chegada da mercadoria."
-        },
-        {
-          "text": "RF23: Registrar contas a pagar relacionadas a compras."
+          "text": "Financeiro registra forma de pagamento (Pix, boleto, financiamento)."
         }
       ]
     },
     {
-      "title": "4.6 Financeiro / Fluxo de Caixa",
+      "title": "Baixa no estoque",
       "requirements": [
         {
-          "text": "RF24: Registrar entradas (vendas, depósitos)."
-        },
-        {
-          "text": "RF25: Registrar saídas (pagamentos a fornecedores, despesas)."
-        },
-        {
-          "text": "RF26: Exibir saldo diário e mensal."
-        },
-        {
-          "text": "RF27: Gerar relatório financeiro."
+          "text": "Status muda para “Vendido”."
         }
       ]
     },
     {
-      "title": "4.7 Relatórios",
+      "title": "Regras:",
       "requirements": [
         {
-          "text": "RF28: Relatório de vendas por período, forma de pagamento e categorias."
+          "text": "Veículos vendidos não podem voltar ao estoque sem gerar uma “devolução” formal."
         },
         {
-          "text": "RF29: Relatório de produtos mais vendidos e menos vendidos."
-        },
-        {
-          "text": "RF30: Relatório de estoque atual e produtos em falta."
-        },
-        {
-          "text": "RF31: Relatório de fluxo de caixa com gráfico."
-        },
-        {
-          "text": "RF32: Exportar relatórios para PDF ou Excel."
+          "text": "Propostas expiram em 24h (configurável)."
         }
       ]
     },
     {
-      "title": "4.8 Usuários e Permissões",
+      "title": "3.4 Gestão de Clientes",
+      "requirements": []
+    },
+    {
+      "title": "Funcionalidades:",
       "requirements": [
         {
-          "text": "RF33: Criar perfis de acesso (Administrador, Caixa, Estoquista)."
+          "text": "Cadastrar novos clientes"
         },
         {
-          "text": "RF34: Restringir funcionalidades de acordo com permissões."
+          "text": "Consultar histórico de compras"
         },
         {
-          "text": "RF35: Registro de log de ações críticas (cancelamentos, ajustes de estoque)."
+          "text": "Verificar pendências financeiras"
+        }
+      ]
+    },
+    {
+      "title": "Campos obrigatórios:",
+      "requirements": [
+        {
+          "text": "Nome completo"
+        },
+        {
+          "text": "CPF"
+        },
+        {
+          "text": "Telefone"
+        },
+        {
+          "text": "E-mail"
+        },
+        {
+          "text": "Endereço"
+        }
+      ]
+    },
+    {
+      "title": "3.5 Relatórios",
+      "requirements": []
+    },
+    {
+      "title": "Tipos:",
+      "requirements": [
+        {
+          "text": "Relatório de vendas por período"
+        },
+        {
+          "text": "Relatório de margem por veículo"
+        },
+        {
+          "text": "Relatório de estoque (novos e usados)"
+        },
+        {
+          "text": "Relatório de avaliação de usados"
+        },
+        {
+          "text": "Relatório financeiro geral"
+        }
+      ]
+    },
+    {
+      "title": "Exemplos:",
+      "requirements": [
+        {
+          "text": "“Vendas do mês de outubro: R$ 412.000 — 14 veículos vendidos”"
+        },
+        {
+          "text": "“Margem média de lucro: 18,5%”"
+        }
+      ]
+    },
+    {
+      "title": "4. Fluxos do Sistema (Workflows)",
+      "requirements": []
+    },
+    {
+      "title": "4.1 Workflow: Avaliação de Carro Usado",
+      "requirements": [
+        {
+          "text": "Vendedor → registra dados do cliente + carro"
+        },
+        {
+          "text": "Avaliador → faz inspeção"
+        },
+        {
+          "text": "Sistema → registra valor sugerido"
+        },
+        {
+          "text": "Administrador → aprova valor"
+        },
+        {
+          "text": "Sistema → muda status do veículo → “Aguardando documentação”"
+        },
+        {
+          "text": "Após documentos → “Disponível para venda”"
+        }
+      ]
+    },
+    {
+      "title": "4.2 Workflow: Venda de Carro",
+      "requirements": [
+        {
+          "text": "Vendedor seleciona cliente"
+        },
+        {
+          "text": "Escolhe veículo"
+        },
+        {
+          "text": "Cadastra proposta"
+        },
+        {
+          "text": "Sistema verifica limites de desconto"
+        },
+        {
+          "text": "Se ok → contrato gerado"
+        },
+        {
+          "text": "Financeiro confirma pagamento"
+        },
+        {
+          "text": "Sistema atualiza estoque → “Vendido”"
         }
       ]
     },
     {
       "title": "5. Requisitos Não Funcionais",
-      "requirements": [
-        {
-          "text": "RNF01: Sistema deve operar offline com sincronização quando conectado (opcional)."
-        },
-        {
-          "text": "RNF02: Interface rápida e intuitiva, com navegação otimizada para caixa."
-        },
-        {
-          "text": "RNF03: Tempo de resposta inferior a 1 segundo nas operações de PDV."
-        },
-        {
-          "text": "RNF04: Backup automático diário."
-        },
-        {
-          "text": "RNF05: Segurança: senhas criptografadas, controle de acesso por sessão."
-        },
-        {
-          "text": "RNF06: Suporte a impressoras térmicas padrão ESC/POS."
-        },
-        {
-          "text": "RNF07: Escalabilidade leve para uso multi-dispositivo no estabelecimento."
-        }
-      ]
-    },
-    {
-      "title": "6. Modelagem de Dados (Resumo Conceitual)",
-      "requirements": [
-        {
-          "text": "Produto (id, nome, categoria, código_barras, preço_venda, preço_custo, estoque, unidade, status)."
-        },
-        {
-          "text": "MovimentoEstoque (id, produto_id, tipo, quantidade, motivo, data)."
-        },
-        {
-          "text": "Venda (id, cliente_id, total, forma_pagamento, desconto, data)."
-        },
-        {
-          "text": "ItemVenda (id, venda_id, produto_id, quantidade, preço)."
-        },
-        {
-          "text": "Cliente (id, nome, telefone, cpf, saldo_fiado)."
-        },
-        {
-          "text": "Fornecedor (id, nome, cnpj, telefone, endereço)."
-        },
-        {
-          "text": "Compra (id, fornecedor_id, total, data)."
-        },
-        {
-          "text": "ItemCompra (id, compra_id, produto_id, quantidade, custo)."
-        },
-        {
-          "text": "Financeiro (id, tipo, valor, categoria, data, descrição)."
-        },
-        {
-          "text": "Usuário (id, nome, login, senha, perfil)."
-        }
-      ]
-    },
-    {
-      "title": "7. Fluxos Principais",
       "requirements": []
     },
     {
-      "title": "Fluxo de Venda",
+      "title": "5.1 Performance",
       "requirements": [
         {
-          "text": "Atendente abre caixa."
+          "text": "Resposta das telas deve ser inferior a 2s"
         },
         {
-          "text": "Escaneia produtos ou pesquisa manualmente."
-        },
-        {
-          "text": "Sistema exibe total, permite aplicar desconto."
-        },
-        {
-          "text": "Cliente escolhe forma de pagamento."
-        },
-        {
-          "text": "Venda é registrada e estoque abatido."
-        },
-        {
-          "text": "Impressão do comprovante."
-        },
-        {
-          "text": "Caixa registra fechamento ao fim do dia."
+          "text": "Suportar até 200 usuários simultâneos"
         }
       ]
     },
     {
-      "title": "Fluxo de Reposição",
+      "title": "5.2 Segurança",
       "requirements": [
         {
-          "text": "Gerente cria pedido de compra."
+          "text": "Controle de acesso por papel"
         },
         {
-          "text": "Mercadoria chega → conferência de quantidades."
-        },
-        {
-          "text": "Entrada de estoque com vínculo ao fornecedor."
-        },
-        {
-          "text": "Atualização automática do saldo de estoque."
+          "text": "Logs de todas as alterações de preço e contratos"
         }
       ]
     },
     {
-      "title": "Fluxo Financeiro",
+      "title": "5.3 Usabilidade",
       "requirements": [
         {
-          "text": "Registro de vendas automáticas como entrada."
+          "text": "Interface em português"
         },
         {
-          "text": "Despesas e pagamentos de fornecedores como saídas."
-        },
-        {
-          "text": "Sistema gera relatório consolidado."
+          "text": "Layout responsivo para desktop e tablet"
         }
       ]
     },
     {
-      "title": "8. Relatórios Essenciais",
+      "title": "6. Interfaces do Sistema",
+      "requirements": []
+    },
+    {
+      "title": "6.1 Tela: Lista de Veículos",
       "requirements": [
         {
-          "text": "Vendas diárias e por período."
+          "text": "Filtros: marca, modelo, ano, km, preço, status"
         },
         {
-          "text": "Produtos mais vendidos."
-        },
-        {
-          "text": "Estoque mínimo."
-        },
-        {
-          "text": "Movimentações de caixa."
-        },
-        {
-          "text": "Relatório completo para contabilidade."
+          "text": "Ações: visualizar, editar, vender, remover"
         }
       ]
     },
     {
-      "title": "9. Integrações Futuras (Roadmap)",
+      "title": "6.2 Tela: Avaliação",
       "requirements": [
         {
-          "text": "Integração fiscal com NF-e/NFC-e."
+          "text": "Upload de fotos"
         },
         {
-          "text": "Integração com sistemas de pagamento (maquininhas)."
+          "text": "Checklist de conservação"
         },
         {
-          "text": "Versão mobile para consulta rápida."
-        },
-        {
-          "text": "App para controle de compras e estoque."
+          "text": "Campo “valor sugerido”"
         }
       ]
     },
     {
-      "title": "10. Considerações Finais",
+      "title": "6.3 Tela: Proposta de Venda",
       "requirements": [
         {
-          "text": "Documento funcional completo para início de análise técnica, modelagem de banco, fluxos detalhados e protótipos de tela. Pode ser expandido conforme novas necessidades do mercadinho."
+          "text": "Cliente"
+        },
+        {
+          "text": "Veículo selecionado"
+        },
+        {
+          "text": "Desconto aplicado"
+        },
+        {
+          "text": "Valor final"
+        },
+        {
+          "text": "Campo observações"
+        }
+      ]
+    },
+    {
+      "title": "7. Especificações Técnicas",
+      "requirements": []
+    },
+    {
+      "title": "7.1 Tecnologia Sugerida",
+      "requirements": [
+        {
+          "text": "Backend: Node.js ou Python (FastAPI)"
+        },
+        {
+          "text": "Banco: PostgreSQL"
+        },
+        {
+          "text": "Frontend: React"
+        },
+        {
+          "text": "API REST estruturada"
+        }
+      ]
+    },
+    {
+      "title": "7.2 Estrutura da Base de Dados (simplificada)",
+      "requirements": []
+    },
+    {
+      "title": "Tabela: Veiculos",
+      "requirements": [
+        {
+          "text": "id"
+        },
+        {
+          "text": "marca"
+        },
+        {
+          "text": "modelo"
+        },
+        {
+          "text": "ano"
+        },
+        {
+          "text": "km"
+        },
+        {
+          "text": "preco_venda"
+        },
+        {
+          "text": "preco_compra"
+        },
+        {
+          "text": "status"
+        }
+      ]
+    },
+    {
+      "title": "Tabela: Clientes",
+      "requirements": [
+        {
+          "text": "id"
+        },
+        {
+          "text": "nome"
+        },
+        {
+          "text": "cpf"
+        },
+        {
+          "text": "telefone"
+        },
+        {
+          "text": "email"
+        }
+      ]
+    },
+    {
+      "title": "Tabela: Propostas",
+      "requirements": [
+        {
+          "text": "id"
+        },
+        {
+          "text": "id_cliente"
+        },
+        {
+          "text": "id_veiculo"
+        },
+        {
+          "text": "valor_final"
+        },
+        {
+          "text": "status"
+        }
+      ]
+    },
+    {
+      "title": "8. Glossário",
+      "requirements": []
+    },
+    {
+      "title": "Proposta de Venda: Documento digital inicial de negociação.",
+      "requirements": []
+    },
+    {
+      "title": "Avaliação: Processo de inspeção de veículo usado.",
+      "requirements": []
+    },
+    {
+      "title": "Margem mínima: Diferença mínima obrigatória entre compra e venda.",
+      "requirements": []
+    },
+    {
+      "title": "9. Anexos",
+      "requirements": [
+        {
+          "text": "Modelo de contrato de compra"
+        },
+        {
+          "text": "Modelo de contrato de venda"
+        },
+        {
+          "text": "Checklist de inspeção de veículo usado"
         }
       ]
     }
